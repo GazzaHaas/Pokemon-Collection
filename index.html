@@ -697,9 +697,23 @@ var CARDS=[
     "Neo Destiny":1,"Neo Revelation":1,"Neo Discovery":1,"Neo Genesis":1,
     "SM Promo":1,"XY Promo":1,"P Promos":1,
     "Miscellaneous Promos 1998":1,"VS":1,
-    "Vending Machine Set 1":1,"Vending Machine Set 2":1,"Vending Machine Set 3":1,
-    "Storm Emeralda":1,"30th Celebration":1,"Phantasmal Flames":1,
-    "Mega Evolution":1,"Black Bolt":1,"Destined Rivals":1,"Journey Together":1
+    "Vending Machine Set 1":1,"Vending Machine Set 2":1,"Vending Machine Set 3":1
+  };
+
+  var HOLO_RARES = {
+    "Expedition|23/165":1,
+    "EX Sandstorm|7/100":1,
+    "EX Hidden Legends|6/101":1,
+    "EX FireRed & LeafGreen|5/112":1,
+    "EX FireRed & LeafGreen|17/112":1,
+    "EX Deoxys|4/107":1,
+    "EX Team Rocket Returns|13/109":1,
+    "EX Unseen Forces|15/115":1,
+    "EX Crystal Guardians|5/100":1,
+    "Legendary Treasures|23/113":1,
+    "Legendary Treasures|99/113":1,
+    "Steam Siege|50/114":1,
+    "Chilling Reign|118/198":1
   };
 
   function getVariants(card) {
@@ -713,12 +727,11 @@ var CARDS=[
     if (num.indexOf("/") !== -1) {
       var parts = num.split("/");
       var left = parts[0];
-      var right = parts[1];
 
       if (/^[A-Za-z]/.test(left)) return 0;
 
       var cardNum = parseInt(left, 10);
-      var setTotal = parseInt(right, 10);
+      var setTotal = parseInt(parts[1], 10);
       if (!isNaN(cardNum) && !isNaN(setTotal) && cardNum > setTotal) return 0;
     }
 
@@ -726,38 +739,23 @@ var CARDS=[
     if (/ V-UNION$/.test(name) || / V$/.test(name) || / GX$/.test(name) ||
         / VMAX$/.test(name) || / VSTAR$/.test(name) || / ex$/.test(name)) return 0;
 
-    if (setName === "Expedition") {
-      if (num === "23/165") return 2;
-      return 1;
-    }
-    if (setName === "Aquapolis") {
-      if (num === "29/147") return 2;
-      return 1;
-    }
-    if (setName === "Skyridge") return 1;
-
-    if (setName === "Shining Legends" || setName === "Pokemon GO") return 0;
-
-    if (era === 0) return 1;
+    if (HOLO_RARES[cardId(card)]) return 3;
 
     return 1;
   }
 
-  var VARIANT_NAMES = ["Normal", "Holo", "Reverse Holo"];
-  var VARIANT_BITS = [1, 2, 4];
-
   function variantBitsForCard(card) {
     var v = getVariants(card);
     if (v === 0) return [1];
-    if (v === 1) return [1, 4];
-    return [1, 2, 4];
+    if (v === 3) return [2, 4];
+    return [1, 4];
   }
 
   function variantNamesForCard(card) {
     var v = getVariants(card);
     if (v === 0) return ["Normal"];
-    if (v === 1) return ["Normal", "Reverse Holo"];
-    return ["Normal", "Holo", "Reverse Holo"];
+    if (v === 3) return ["Holo", "Reverse Holo"];
+    return ["Normal", "Reverse Holo"];
   }
 
   function isCollected(cid) {
@@ -793,6 +791,17 @@ var CARDS=[
       var d = localStorage.getItem("komiya-tcg");
       if (d) collected = JSON.parse(d);
     } catch(e) { collected = {}; }
+    var changed = false;
+    for (var i = 0; i < CARDS.length; i++) {
+      var cid = cardId(CARDS[i]);
+      if (collected[cid] === 1 && getVariants(CARDS[i]) === 3) {
+        collected[cid] = 2;
+        changed = true;
+      }
+    }
+    if (changed) {
+      try { localStorage.setItem("komiya-tcg", JSON.stringify(collected)); } catch(e) {}
+    }
   }
 
   function saveState() {
