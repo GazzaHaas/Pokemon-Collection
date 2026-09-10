@@ -388,6 +388,25 @@ main {
   border-color: var(--blue);
   color: #fff;
 }
+#era-filter {
+  width: 100%;
+  padding: 0.45rem 0.75rem;
+  margin-top: 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23777' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  cursor: pointer;
+}
+#era-filter:focus { border-color: var(--accent); }
 .filt-hidden { display: none !important; }
 footer {
   text-align: center;
@@ -425,6 +444,9 @@ noscript {
       <button class="filter-btn" data-filter="collected">Collected</button>
       <button class="filter-btn" data-filter="needed">Needed</button>
     </div>
+    <select id="era-filter">
+      <option value="all">All Eras</option>
+    </select>
   </div>
 </header>
 <main id="container">
@@ -734,6 +756,7 @@ var CARDS=[
   var TOTAL = CARDS.length;
   var openPopup = null;
   var currentFilter = "all";
+  var currentEra = "all";
 
   var NORMAL_ONLY_SETS = {
     "SWSH Promos":1,"SM Promos":1,"XY Promos":1,"BW Promos":1,
@@ -1179,6 +1202,7 @@ var CARDS=[
         currentSet = null;
         eraDiv = document.createElement("div");
         eraDiv.className = "era-section";
+        eraDiv.setAttribute("data-era", String(era));
         var eh = document.createElement("h2");
         eh.className = "era-header";
         eh.textContent = ERA_NAMES[era];
@@ -1250,11 +1274,16 @@ var CARDS=[
 
     var eras = document.querySelectorAll(".era-section");
     for (var k = 0; k < eras.length; k++) {
-      var hasVisSet = eras[k].querySelector(".set-section:not(.filt-hidden)");
-      if (hasVisSet) {
-        eras[k].classList.remove("filt-hidden");
-      } else {
+      var eraMatch = currentEra === "all" || eras[k].getAttribute("data-era") === currentEra;
+      if (!eraMatch) {
         eras[k].classList.add("filt-hidden");
+      } else {
+        var hasVisSet = eras[k].querySelector(".set-section:not(.filt-hidden)");
+        if (hasVisSet) {
+          eras[k].classList.remove("filt-hidden");
+        } else {
+          eras[k].classList.add("filt-hidden");
+        }
       }
     }
   }
@@ -1274,9 +1303,25 @@ var CARDS=[
     try {
       var saved = localStorage.getItem("komiya-tcg-filter");
       if (saved === "collected" || saved === "needed") currentFilter = saved;
+      var savedEra = localStorage.getItem("komiya-tcg-era");
+      if (savedEra !== null) currentEra = savedEra;
     } catch(e) {}
     renderAll();
     updateTotalProgress();
+
+    var eraSelect = document.getElementById("era-filter");
+    for (var e = 0; e < ERA_NAMES.length; e++) {
+      var opt = document.createElement("option");
+      opt.value = String(e);
+      opt.textContent = ERA_NAMES[e];
+      eraSelect.appendChild(opt);
+    }
+    eraSelect.value = currentEra;
+    eraSelect.addEventListener("change", function() {
+      currentEra = this.value;
+      try { localStorage.setItem("komiya-tcg-era", currentEra); } catch(ex) {}
+      applyFilters();
+    });
 
     var btns = document.querySelectorAll(".filter-btn");
     for (var i = 0; i < btns.length; i++) {
@@ -1286,7 +1331,7 @@ var CARDS=[
       });
     }
 
-    if (currentFilter !== "all") applyFilters();
+    if (currentFilter !== "all" || currentEra !== "all") applyFilters();
 
     var searchEl = document.getElementById("search");
     var timer = null;
