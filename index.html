@@ -350,6 +350,44 @@ main {
   background: var(--green);
   opacity: 1;
 }
+.filter-bar {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+.filter-btn {
+  flex: 1;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.filter-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.filter-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+}
+.filter-btn.active[data-filter="collected"] {
+  background: var(--green);
+  border-color: var(--green);
+}
+.filter-btn.active[data-filter="needed"] {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
 .filt-hidden { display: none !important; }
 footer {
   text-align: center;
@@ -382,6 +420,11 @@ noscript {
       <div class="progress-bar"><div id="progress-fill"></div></div>
     </div>
     <input type="text" id="search" placeholder="Search by Pokemon name or set name...">
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="collected">Collected</button>
+      <button class="filter-btn" data-filter="needed">Needed</button>
+    </div>
   </div>
 </header>
 <main id="container">
@@ -690,6 +733,7 @@ var CARDS=[
   var collected = {};
   var TOTAL = CARDS.length;
   var openPopup = null;
+  var currentFilter = "all";
 
   var NORMAL_ONLY_SETS = {
     "SWSH Promos":1,"SM Promos":1,"XY Promos":1,"BW Promos":1,
@@ -997,6 +1041,7 @@ var CARDS=[
           updateTotalProgress();
           var sec = div.closest(".set-section");
           if (sec) updateSetProgress(sec);
+          if (currentFilter !== "all") applyFilters();
         });
 
         popup.appendChild(row);
@@ -1065,6 +1110,7 @@ var CARDS=[
         updateTotalProgress();
         var sec = div.closest(".set-section");
         if (sec) updateSetProgress(sec);
+        if (currentFilter !== "all") applyFilters();
       });
     } else {
       cb.addEventListener("click", function(e) {
@@ -1172,13 +1218,20 @@ var CARDS=[
     }
   }
 
-  function applyFilter(query) {
+  function applyFilters() {
+    var query = (document.getElementById("search").value || "").toLowerCase().trim();
     var cards = document.querySelectorAll(".card");
     for (var i = 0; i < cards.length; i++) {
       var name = cards[i].getAttribute("data-name");
       var set = cards[i].getAttribute("data-set");
-      var match = !query || name.indexOf(query) !== -1 || set.indexOf(query) !== -1;
-      if (match) {
+      var textMatch = !query || name.indexOf(query) !== -1 || set.indexOf(query) !== -1;
+      var statusMatch = true;
+      if (currentFilter === "collected") {
+        statusMatch = cards[i].classList.contains("collected") || cards[i].classList.contains("partial");
+      } else if (currentFilter === "needed") {
+        statusMatch = !cards[i].classList.contains("collected") && !cards[i].classList.contains("partial");
+      }
+      if (textMatch && statusMatch) {
         cards[i].classList.remove("filt-hidden");
       } else {
         cards[i].classList.add("filt-hidden");
@@ -1206,17 +1259,40 @@ var CARDS=[
     }
   }
 
+  function setActiveFilter(filter) {
+    currentFilter = filter;
+    try { localStorage.setItem("komiya-tcg-filter", filter); } catch(e) {}
+    var btns = document.querySelectorAll(".filter-btn");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle("active", btns[i].getAttribute("data-filter") === filter);
+    }
+    applyFilters();
+  }
+
   function init() {
     loadState();
+    try {
+      var saved = localStorage.getItem("komiya-tcg-filter");
+      if (saved === "collected" || saved === "needed") currentFilter = saved;
+    } catch(e) {}
     renderAll();
     updateTotalProgress();
+
+    var btns = document.querySelectorAll(".filter-btn");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle("active", btns[i].getAttribute("data-filter") === currentFilter);
+      btns[i].addEventListener("click", function() {
+        setActiveFilter(this.getAttribute("data-filter"));
+      });
+    }
+
+    if (currentFilter !== "all") applyFilters();
 
     var searchEl = document.getElementById("search");
     var timer = null;
     searchEl.addEventListener("input", function() {
       clearTimeout(timer);
-      var q = searchEl.value.toLowerCase().trim();
-      timer = setTimeout(function() { applyFilter(q); }, 120);
+      timer = setTimeout(function() { applyFilters(); }, 120);
     });
 
     document.addEventListener("click", function(e) {
