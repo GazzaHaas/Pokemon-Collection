@@ -215,6 +215,8 @@ main {
   pointer-events: none;
 }
 .card.collected .collected-overlay { opacity: 1; }
+.card.partial .card-img { filter: brightness(0.7); }
+.card.collected .card-img { filter: brightness(0.45); }
 .card-checkbox {
   position: absolute;
   top: 5px;
@@ -241,11 +243,74 @@ main {
   background: var(--green);
   border-color: var(--green);
 }
+.card.partial .card-checkbox {
+  background: rgba(62, 207, 142, 0.35);
+  border-color: var(--green);
+}
 .checkmark {
   color: #fff;
   font-size: 15px;
   font-weight: 700;
   line-height: 1;
+}
+.variant-popup {
+  position: absolute;
+  top: 40px;
+  right: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  z-index: 20;
+  min-width: 150px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+}
+.variant-popup-title {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border);
+}
+.variant-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.variant-row:hover {
+  background: rgba(255,255,255,0.05);
+}
+.variant-cb {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--text-dim);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.variant-cb.checked {
+  background: var(--green);
+  border-color: var(--green);
+}
+.variant-cb-mark {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+.variant-label {
+  font-size: 0.82rem;
+  color: var(--text);
 }
 .card-info {
   padding: 0.4rem 0.5rem;
@@ -267,6 +332,23 @@ main {
   font-size: 0.68rem;
   color: var(--text-dim);
   white-space: nowrap;
+}
+.variant-dots {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  margin-left: 4px;
+}
+.variant-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  opacity: 0.3;
+}
+.variant-dot.owned {
+  background: var(--green);
+  opacity: 1;
 }
 .filt-hidden { display: none !important; }
 footer {
@@ -607,6 +689,104 @@ var CARDS=[
 (function() {
   var collected = {};
   var TOTAL = CARDS.length;
+  var openPopup = null;
+
+  var NORMAL_ONLY_SETS = {
+    "SWSH Promos":1,"SM Promos":1,"XY Promos":1,"BW Promos":1,
+    "Wizards Promos":1,"Play Promotional":1,"POP Series 2":1,
+    "Neo Destiny":1,"Neo Revelation":1,"Neo Discovery":1,"Neo Genesis":1,
+    "SM Promo":1,"XY Promo":1,"P Promos":1,
+    "Miscellaneous Promos 1998":1,"VS":1,
+    "Vending Machine Set 1":1,"Vending Machine Set 2":1,"Vending Machine Set 3":1,
+    "Storm Emeralda":1,"30th Celebration":1,"Phantasmal Flames":1,
+    "Mega Evolution":1,"Black Bolt":1,"Destined Rivals":1,"Journey Together":1
+  };
+
+  function getVariants(card) {
+    var setName = card[2];
+    var num = card[1];
+    var era = card[5];
+
+    if (era === 8) return 0;
+    if (NORMAL_ONLY_SETS[setName]) return 0;
+
+    if (num.indexOf("/") !== -1) {
+      var parts = num.split("/");
+      var left = parts[0];
+      var right = parts[1];
+
+      if (/^[A-Za-z]/.test(left)) return 0;
+
+      var cardNum = parseInt(left, 10);
+      var setTotal = parseInt(right, 10);
+      if (!isNaN(cardNum) && !isNaN(setTotal) && cardNum > setTotal) return 0;
+    }
+
+    var name = card[0];
+    if (/ V-UNION$/.test(name) || / V$/.test(name) || / GX$/.test(name) ||
+        / VMAX$/.test(name) || / VSTAR$/.test(name) || / ex$/.test(name)) return 0;
+
+    if (setName === "Expedition") {
+      if (num === "23/165") return 2;
+      return 1;
+    }
+    if (setName === "Aquapolis") {
+      if (num === "29/147") return 2;
+      return 1;
+    }
+    if (setName === "Skyridge") return 1;
+
+    if (setName === "Shining Legends" || setName === "Pokemon GO") return 0;
+
+    if (era === 0) return 1;
+
+    return 1;
+  }
+
+  var VARIANT_NAMES = ["Normal", "Holo", "Reverse Holo"];
+  var VARIANT_BITS = [1, 2, 4];
+
+  function variantBitsForCard(card) {
+    var v = getVariants(card);
+    if (v === 0) return [1];
+    if (v === 1) return [1, 4];
+    return [1, 2, 4];
+  }
+
+  function variantNamesForCard(card) {
+    var v = getVariants(card);
+    if (v === 0) return ["Normal"];
+    if (v === 1) return ["Normal", "Reverse Holo"];
+    return ["Normal", "Holo", "Reverse Holo"];
+  }
+
+  function isCollected(cid) {
+    return collected[cid] && collected[cid] > 0;
+  }
+
+  function isFullyCollected(cid, card) {
+    var val = collected[cid] || 0;
+    var bits = variantBitsForCard(card);
+    var allBits = 0;
+    for (var i = 0; i < bits.length; i++) allBits |= bits[i];
+    return (val & allBits) === allBits;
+  }
+
+  function isPartiallyCollected(cid, card) {
+    var val = collected[cid] || 0;
+    if (val === 0) return false;
+    return !isFullyCollected(cid, card);
+  }
+
+  function countOwnedVariants(cid, card) {
+    var val = collected[cid] || 0;
+    var bits = variantBitsForCard(card);
+    var count = 0;
+    for (var i = 0; i < bits.length; i++) {
+      if (val & bits[i]) count++;
+    }
+    return count;
+  }
 
   function loadState() {
     try {
@@ -651,7 +831,11 @@ var CARDS=[
   }
 
   function updateTotalProgress() {
-    var count = Object.keys(collected).length;
+    var count = 0;
+    for (var i = 0; i < CARDS.length; i++) {
+      var cid = cardId(CARDS[i]);
+      if (isCollected(cid)) count++;
+    }
     var pct = TOTAL > 0 ? Math.round(count / TOTAL * 100) : 0;
     document.getElementById("progress-count").textContent =
       count + " / " + TOTAL + " collected (" + pct + "%)";
@@ -660,7 +844,7 @@ var CARDS=[
 
   function updateSetProgress(section) {
     var all = section.querySelectorAll(".card");
-    var done = section.querySelectorAll(".card.collected");
+    var done = section.querySelectorAll(".card.collected, .card.partial");
     var el = section.querySelector(".set-progress");
     if (el) {
       el.textContent = done.length + "/" + all.length;
@@ -712,12 +896,117 @@ var CARDS=[
     }
   }
 
+  function closePopup() {
+    if (openPopup) {
+      if (openPopup.parentNode) openPopup.parentNode.removeChild(openPopup);
+      openPopup = null;
+    }
+  }
+
+  function updateCardState(div, card) {
+    var cid = cardId(card);
+    var full = isFullyCollected(cid, card);
+    var partial = isPartiallyCollected(cid, card);
+    var any = isCollected(cid);
+
+    div.classList.toggle("collected", full);
+    div.classList.toggle("partial", partial);
+
+    var cm = div.querySelector(".checkmark");
+    if (cm) {
+      if (full) cm.textContent = "✓";
+      else if (partial) cm.textContent = "½";
+      else cm.textContent = "";
+    }
+
+    var dots = div.querySelectorAll(".variant-dot");
+    if (dots.length > 0) {
+      var bits = variantBitsForCard(card);
+      var val = collected[cid] || 0;
+      for (var i = 0; i < dots.length; i++) {
+        dots[i].classList.toggle("owned", !!(val & bits[i]));
+      }
+    }
+  }
+
+  function createVariantPopup(card, div) {
+    var cid = cardId(card);
+    var names = variantNamesForCard(card);
+    var bits = variantBitsForCard(card);
+
+    var popup = document.createElement("div");
+    popup.className = "variant-popup";
+
+    var title = document.createElement("div");
+    title.className = "variant-popup-title";
+    title.textContent = "Variants";
+    popup.appendChild(title);
+
+    for (var i = 0; i < names.length; i++) {
+      (function(idx) {
+        var row = document.createElement("div");
+        row.className = "variant-row";
+
+        var cb = document.createElement("div");
+        cb.className = "variant-cb";
+        var val = collected[cid] || 0;
+        if (val & bits[idx]) cb.classList.add("checked");
+
+        var mark = document.createElement("span");
+        mark.className = "variant-cb-mark";
+        mark.textContent = (val & bits[idx]) ? "✓" : "";
+        cb.appendChild(mark);
+        row.appendChild(cb);
+
+        var label = document.createElement("span");
+        label.className = "variant-label";
+        label.textContent = names[idx];
+        row.appendChild(label);
+
+        row.addEventListener("click", function(e) {
+          e.stopPropagation();
+          e.preventDefault();
+          var current = collected[cid] || 0;
+          if (current & bits[idx]) {
+            current &= ~bits[idx];
+          } else {
+            current |= bits[idx];
+          }
+          if (current === 0) {
+            delete collected[cid];
+          } else {
+            collected[cid] = current;
+          }
+          saveState();
+
+          var isOn = !!(current & bits[idx]);
+          cb.classList.toggle("checked", isOn);
+          mark.textContent = isOn ? "✓" : "";
+
+          updateCardState(div, card);
+          updateTotalProgress();
+          var sec = div.closest(".set-section");
+          if (sec) updateSetProgress(sec);
+        });
+
+        popup.appendChild(row);
+      })(i);
+    }
+
+    return popup;
+  }
+
   function createCard(card) {
     var cid = cardId(card);
-    var isCollected = !!collected[cid];
+    var variants = getVariants(card);
+    var full = isFullyCollected(cid, card);
+    var partial = isPartiallyCollected(cid, card);
 
     var div = document.createElement("div");
-    div.className = "card" + (isCollected ? " collected" : "");
+    var cls = "card";
+    if (full) cls += " collected";
+    else if (partial) cls += " partial";
+    div.className = cls;
     div.setAttribute("data-name", card[0].toLowerCase());
     div.setAttribute("data-set", card[2].toLowerCase());
 
@@ -746,26 +1035,41 @@ var CARDS=[
     cb.className = "card-checkbox";
     var cm = document.createElement("span");
     cm.className = "checkmark";
-    cm.textContent = isCollected ? "✓" : "";
+    if (full) cm.textContent = "✓";
+    else if (partial) cm.textContent = "½";
+    else cm.textContent = "";
     cb.appendChild(cm);
-    cb.addEventListener("click", function(e) {
-      e.stopPropagation();
-      e.preventDefault();
-      var id = cid;
-      if (collected[id]) {
-        delete collected[id];
-        div.classList.remove("collected");
-        cm.textContent = "";
-      } else {
-        collected[id] = 1;
-        div.classList.add("collected");
-        cm.textContent = "✓";
-      }
-      saveState();
-      updateTotalProgress();
-      var sec = div.closest(".set-section");
-      if (sec) updateSetProgress(sec);
-    });
+
+    if (variants === 0) {
+      cb.addEventListener("click", function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        closePopup();
+        if (collected[cid]) {
+          delete collected[cid];
+        } else {
+          collected[cid] = 1;
+        }
+        saveState();
+        updateCardState(div, card);
+        updateTotalProgress();
+        var sec = div.closest(".set-section");
+        if (sec) updateSetProgress(sec);
+      });
+    } else {
+      cb.addEventListener("click", function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        if (openPopup && openPopup.parentNode === div) {
+          closePopup();
+          return;
+        }
+        closePopup();
+        var popup = createVariantPopup(card, div);
+        div.appendChild(popup);
+        openPopup = popup;
+      });
+    }
     div.appendChild(cb);
 
     var info = document.createElement("div");
@@ -775,6 +1079,21 @@ var CARDS=[
     nm.textContent = card[0];
     nm.title = card[0];
     info.appendChild(nm);
+
+    if (variants > 0) {
+      var dotsDiv = document.createElement("span");
+      dotsDiv.className = "variant-dots";
+      var bits = variantBitsForCard(card);
+      var val = collected[cid] || 0;
+      for (var i = 0; i < bits.length; i++) {
+        var dot = document.createElement("span");
+        dot.className = "variant-dot";
+        if (val & bits[i]) dot.classList.add("owned");
+        dotsDiv.appendChild(dot);
+      }
+      info.appendChild(dotsDiv);
+    }
+
     var numEl = document.createElement("span");
     numEl.className = "card-num";
     numEl.textContent = card[1];
@@ -888,6 +1207,13 @@ var CARDS=[
       clearTimeout(timer);
       var q = searchEl.value.toLowerCase().trim();
       timer = setTimeout(function() { applyFilter(q); }, 120);
+    });
+
+    document.addEventListener("click", function(e) {
+      if (openPopup && !openPopup.contains(e.target)) {
+        var cb = e.target.closest(".card-checkbox");
+        if (!cb) closePopup();
+      }
     });
   }
 
