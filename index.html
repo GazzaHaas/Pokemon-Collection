@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Komiya Pokemon TCG Collection</title>
+<style>
+:root {
+  --bg: #0d0d0d;
+  --surface: #161625;
+  --card-bg: #1a1a2e;
+  --accent: #ffcb05;
+  --green: #3ecf8e;
+  --blue: #3d7dca;
+  --text: #e8e8e8;
+  --text-dim: #777;
+  --border: #2a2a3e;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(22, 22, 37, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 2px solid var(--accent);
+  padding: 0.75rem 1rem;
+}
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.header-top {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+.header-top h1 {
+  font-size: 1.15rem;
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.header-top span {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+  flex-wrap: wrap;
+}
+#progress-count {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--green);
+  white-space: nowrap;
+}
+.progress-bar {
+  flex: 1;
+  min-width: 100px;
+  height: 8px;
+  background: #2a2a3e;
+  border-radius: 4px;
+  overflow: hidden;
+}
+#progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--blue), var(--green));
+  border-radius: 4px;
+  transition: width 0.35s ease;
+}
+#search {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+#search:focus { border-color: var(--accent); }
+#search::placeholder { color: var(--text-dim); }
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.era-section { margin-bottom: 1.5rem; }
+.era-header {
+  font-size: 1rem;
+  color: var(--accent);
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+.set-section { margin-bottom: 1.25rem; }
+.set-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  margin-bottom: 0.6rem;
+}
+.set-header h3 {
+  font-size: 0.95rem;
+  color: var(--text);
+  font-weight: 500;
+}
+.set-progress {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  background: var(--surface);
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color 0.2s, background 0.2s;
+}
+.set-complete .set-progress {
+  color: var(--green);
+  background: rgba(62, 207, 142, 0.12);
+}
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+}
+@media (min-width: 580px) {
+  .card-grid { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+}
+@media (min-width: 900px) {
+  .card-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+}
+.card {
+  position: relative;
+  background: var(--card-bg);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+}
+.card-link {
+  display: block;
+  position: relative;
+  aspect-ratio: 245 / 342;
+  background: #111;
+  overflow: hidden;
+  text-decoration: none;
+}
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #111;
+}
+.card-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+  text-align: center;
+  padding: 0.75rem;
+}
+.placeholder-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.2rem;
+  word-break: break-word;
+}
+.placeholder-num {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.collected-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: var(--green);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+}
+.card.collected .collected-overlay { opacity: 1; }
+.card-checkbox {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 30px;
+  height: 30px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 2px solid rgba(255,255,255,0.25);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.card-checkbox:hover {
+  border-color: var(--green);
+  background: rgba(0, 0, 0, 0.75);
+}
+.card.collected .card-checkbox {
+  background: var(--green);
+  border-color: var(--green);
+}
+.checkmark {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+}
+.card-info {
+  padding: 0.4rem 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+.card-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.card-num {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.filt-hidden { display: none !important; }
+footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+}
+footer a { color: var(--blue); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+noscript {
+  display: block;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text);
+  font-size: 1.1rem;
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="header-top">
+      <h1>Tomokazu Komiya</h1>
+      <span>Pokemon TCG Collection Tracker</span>
+    </div>
+    <div class="progress-row">
+      <span id="progress-count">0 / 278 collected (0%)</span>
+      <div class="progress-bar"><div id="progress-fill"></div></div>
+    </div>
+    <input type="text" id="search" placeholder="Search by Pokemon name or set name...">
+  </div>
+</header>
+<main id="container">
+  <noscript>Please enable JavaScript to use this collection tracker.</noscript>
+</main>
+<footer>
+  <p>278 cards illustrated by Tomokazu Komiya &middot; Data from <a href="https://www.serebii.net/card/dex/artist/tomokazukomiya.shtml" target="_blank" rel="noopener">Serebii.net</a></p>
+</footer>
+<script>
+var SET_IDS={"Surging Sparks":"sv8","Stellar Crown":"sv7","Twilight Masquerade":"sv6","Temporal Forces":"sv5","Paradox Rift":"sv4","151":"sv3pt5","Obsidian Flames":"sv3","Paldea Evolved":"sv2","Scarlet Violet":"sv1","SWSH Promos":"swshp","Crown Zenith":"swsh12pt5","Silver Tempest":"swsh12","Lost Origin":"swsh11","Pokemon GO":"pgo","Astral Radiance":"swsh10","Brilliant Stars":"swsh9","Fusion Strike":"swsh8","Evolving Skies":"swsh7","Chilling Reign":"swsh6","Battle Styles":"swsh5","Vivid Voltage":"swsh4","Darkness Ablaze":"swsh3","Rebel Clash":"swsh2","Sword Shield":"swsh1","SM Promos":"smp","Cosmic Eclipse":"sm12","Unified Minds":"sm11","Unbroken Bonds":"sm10","Team Up":"sm9","Lost Thunder":"sm8","Forbidden Light":"sm6","Ultra Prism":"sm5","Shining Legends":"sm35","Guardians Rising":"sm2","Sun Moon":"sm1","XY Promos":"xyp","Steam Siege":"xy11","Fates Collide":"xy10","Generations":"g1","BREAKPoint":"xy9","BREAKThrough":"xy8","Ancient Origins":"xy7","Roaring Skies":"xy6","Primal Clash":"xy5","Phantom Forces":"xy4","Furious Fists":"xy3","Flashfire":"xy2","X Y":"xy1","BW Promos":"bwp","Legendary Treasures":"bw11","Plasma Storm":"bw8","Boundaries Crossed":"bw7","Dragons Exalted":"bw6","Dark Explorers":"bw5","Noble Victories":"bw3","Triumphant":"hgss4","Undaunted":"hgss3","Unleashed":"hgss2","HeartGold SoulSilver":"hgss1","Arceus":"pl4","Supreme Victors":"pl3","Rising Rivals":"pl2","Platinum":"pl1","Stormfront":"dp7","Majestic Dawn":"dp5","EX Power Keepers":"ex16","EX Dragon Frontiers":"ex15","EX Crystal Guardians":"ex14","EX Legend Maker":"ex12","EX Delta Species":"ex11","POP Series 2":"pop2","EX Unseen Forces":"ex10","EX Deoxys":"ex8","EX Team Rocket Returns":"ex7","EX FireRed & LeafGreen":"ex6","EX Hidden Legends":"ex5","EX Dragon":"ex3","EX Sandstorm":"ex2","Skyridge":"ecard3","Aquapolis":"ecard2","Expedition":"ecard1","Wizards Promos":"basep","Neo Destiny":"neo4","Neo Revelation":"neo3","Neo Discovery":"neo2","Neo Genesis":"neo1"};
+
+var ERA_NAMES=[
+"Scarlet & Violet (2022–2026)",
+"Sword & Shield (2020–2023)",
+"Sun & Moon (2017–2019)",
+"XY (2014–2016)",
+"Black & White (2011–2013)",
+"HeartGold SoulSilver / Platinum / DP (2007–2011)",
+"EX (2003–2007)",
+"e-Card / Neo / Classic (2000–2003)",
+"Japanese / Promo / Miscellaneous"
+];
+
+var CARDS=[
+["Kecleon","88/76","Storm Emeralda","stormemeralda","088",0],
+["Pikachu","32/128","30th Celebration","30thcelebration","032",0],
+["Charcadet","19/94","Phantasmal Flames","phantasmalflames","019",0],
+["Murkrow","57/94","Phantasmal Flames","phantasmalflames","057",0],
+["Clauncher","37/132","Mega Evolution","megaevolution","037",0],
+["Karrablast","94/86","Black Bolt","blackbolt","094",0],
+["Snover","59/182","Destined Rivals","destinedrivals","059",0],
+["Noibat","127/159","Journey Together","journeytogether","127",0],
+["Morelull","8/191","Surging Sparks","surgingsparks","008",0],
+["Impidimp","94/142","Stellar Crown","stellarcrown","094",0],
+["Venipede","115/167","Twilight Masquerade","twilightmasquerade","115",0],
+["Elgyem","73/162","Temporal Forces","temporalforces","073",0],
+["Toedscool","15/182","Paradox Rift","paradoxrift","015",0],
+["Wiglett","52/182","Paradox Rift","paradoxrift","052",0],
+["Brute Bonnet","207/182","Paradox Rift","paradoxrift","207",0],
+["Gastly","92/165","151","151","092",0],
+["Haunter","93/165","151","151","093",0],
+["Gengar","94/165","151","151","094",0],
+["Rowlet","13/197","Obsidian Flames","obsidianflames","013",0],
+["Lechonk","181/197","Obsidian Flames","obsidianflames","181",0],
+["Frigibax","208/198","Paldea Evolved","paldeaevolved","208",0],
+["Arctibax","209/198","Paldea Evolved","paldeaevolved","209",0],
+["Baxcalibur","210/198","Paldea Evolved","paldeaevolved","210",0],
+["Sandile","115/198","Scarlet Violet","scarletviolet","115",0],
+["Drowzee","210/198","Scarlet Violet","scarletviolet","210",0],
+["Pikachu V-UNION","SWSH139","SWSH Promos","swshpromos","139",1],
+["Skrelp","81/159","Crown Zenith","crownzenith","081",1],
+["Oricorio","GG4/GG70","Crown Zenith","crownzenith","H4",1],
+["Jynx","62/195","Silver Tempest","silvertempest","062",1],
+["Dreepy","87/195","Silver Tempest","silvertempest","087",1],
+["Gloom","2/196","Lost Origin","lostorigin","002",1],
+["Malamar","78/196","Lost Origin","lostorigin","078",1],
+["Seviper","116/196","Lost Origin","lostorigin","116",1],
+["Bronzor","125/196","Lost Origin","lostorigin","125",1],
+["Bidoof","59/78","Pokemon GO","pokemongo","059",1],
+["Pawniard","115/189","Astral Radiance","astralradiance","115",1],
+["Vibrava","75/172","Brilliant Stars","brilliantstars","075",1],
+["Farfetch'd","115/172","Brilliant Stars","brilliantstars","115",1],
+["Simisear","38/264","Fusion Strike","fusionstrike","038",1],
+["Croconaw","56/264","Fusion Strike","fusionstrike","056",1],
+["Pyukumuku","77/264","Fusion Strike","fusionstrike","077",1],
+["Voltorb","87/264","Fusion Strike","fusionstrike","087",1],
+["Roggenrola","86/225","Evolving Skies","evolvingskies","086",1],
+["Drampa","119/225","Evolving Skies","evolvingskies","119",1],
+["Steenee","14/198","Chilling Reign","chillingreign","014",1],
+["Porygon-Z","118/198","Chilling Reign","chillingreign","118",1],
+["Galarian Slowking V","179/198","Chilling Reign","chillingreign","179",1],
+["Cacturne","5/163","Battle Styles","battlestyles","005",1],
+["Jellicent","42/163","Battle Styles","battlestyles","042",1],
+["Grumpig","56/163","Battle Styles","battlestyles","056",1],
+["Pineco","8/180","Vivid Voltage","vividvoltage","008",1],
+["Ninjask","14/180","Vivid Voltage","vividvoltage","014",1],
+["Shedinja","66/180","Vivid Voltage","vividvoltage","066",1],
+["Mareanie","51/189","Darkness Ablaze","darknessablaze","051",1],
+["Flaaffy","56/189","Darkness Ablaze","darknessablaze","056",1],
+["Bunnelby","150/189","Darkness Ablaze","darknessablaze","150",1],
+["Grubbin","16/192","Rebel Clash","rebelclash","016",1],
+["Spiritomb","116/192","Rebel Clash","rebelclash","116",1],
+["Salazzle","28/202","Sword Shield","swordshield","028",1],
+["Claydol","103/202","Sword Shield","swordshield","103",1],
+["Eevee & Snorlax GX","SM169","SM Promos","smpromos","169",2],
+["Wailmer","45/236","Cosmic Eclipse","cosmiceclipse","045",2],
+["Araquanid","65/236","Cosmic Eclipse","cosmiceclipse","065",2],
+["Swoobat","88/236","Cosmic Eclipse","cosmiceclipse","088",2],
+["Jangmo-o","161/236","Cosmic Eclipse","cosmiceclipse","161",2],
+["Crustle","11/236","Unified Minds","unifiedminds","011",2],
+["Wimpod","50/236","Unified Minds","unifiedminds","050",2],
+["Honchkrow","130/236","Unified Minds","unifiedminds","130",2],
+["Noctowl","166/236","Unified Minds","unifiedminds","166",2],
+["Hitmontop","101/214","Unbroken Bonds","unbrokenbonds","101",2],
+["Crabominable","105/214","Unbroken Bonds","unbrokenbonds","105",2],
+["Sharpedo","111/214","Unbroken Bonds","unbrokenbonds","111",2],
+["Purugly","160/214","Unbroken Bonds","unbrokenbonds","160",2],
+["Hitmonlee","73/181","Team Up","teamup","073",2],
+["Hitmonchan","74/181","Team Up","teamup","074",2],
+["Treecko","20/214","Lost Thunder","lostthunder","020",2],
+["Slowpoke","54/214","Lost Thunder","lostthunder","054",2],
+["Onix","109/214","Lost Thunder","lostthunder","109",2],
+["Alolan Persian","119/214","Lost Thunder","lostthunder","119",2],
+["Rockruff","75/131","Forbidden Light","forbiddenlight","075",2],
+["Dedenne","88/131","Forbidden Light","forbiddenlight","088",2],
+["Alolan Vulpix","30/156","Ultra Prism","ultraprism","030",2],
+["Carnivine","6/73","Shining Legends","shininglegends","006",2],
+["Plusle","33/73","Shining Legends","shininglegends","033",2],
+["Jynx","38/73","Shining Legends","shininglegends","038",2],
+["Snorunt","31/145","Guardians Rising","guardiansrising","031",2],
+["Nosepass","69/145","Guardians Rising","guardiansrising","069",2],
+["Sliggoo","95/145","Guardians Rising","guardiansrising","095",2],
+["Snubbull","90/149","Sun Moon","sunmoon","090",2],
+["Celebi","XY187","XY Promos","xypromos","187",3],
+["Larvesta","14/114","Steam Siege","steamsiege","014",3],
+["Chandelure","50/114","Steam Siege","steamsiege","050",3],
+["Binacle","22/124","Fates Collide","fatescollide","022",3],
+["Rotom","24/124","Fates Collide","fatescollide","024",3],
+["Snorlax","77/124","Fates Collide","fatescollide","077",3],
+["Ponyta","14/83","Generations","generations","014",3],
+["Diglett","38/83","Generations","generations","038",3],
+["Gulpin","RC12/RC32","Generations","generations","H12",3],
+["Hypno","51/122","BREAKPoint","breakpoint","051",3],
+["Clefairy","81/122","BREAKPoint","breakpoint","081",3],
+["Cyndaquil","18/162","BREAKThrough","breakthrough","018",3],
+["Magneton","53/162","BREAKThrough","breakthrough","053",3],
+["Beheeyem","74/162","BREAKThrough","breakthrough","074",3],
+["Bronzong","96/162","BREAKThrough","breakthrough","096",3],
+["Rufflet","129/162","BREAKThrough","breakthrough","129",3],
+["Inkay","45/98","Ancient Origins","ancientorigins","045",3],
+["Exeggcute","1/108","Roaring Skies","roaringskies","001",3],
+["Electrode","22/108","Roaring Skies","roaringskies","022",3],
+["Volbeat","17/160","Primal Clash","primalclash","017",3],
+["Illumise","18/160","Primal Clash","primalclash","018",3],
+["Staryu","32/160","Primal Clash","primalclash","032",3],
+["Swadloon","6/119","Phantom Forces","phantomforces","006",3],
+["Swalot","38/119","Phantom Forces","phantomforces","038",3],
+["Scraggy","66/111","Furious Fists","furiousfists","066",3],
+["Ponyta","14/106","Flashfire","flashfire","014",3],
+["Forretress","60/106","Flashfire","flashfire","060",3],
+["Pansear","22/146","X Y","xy","022",3],
+["Herdier","109/146","X Y","xy","109",3],
+["Zorua","BW12","BW Promos","bwpromos","012",4],
+["Victini","23/113","Legendary Treasures","legendarytreasures","023",4],
+["Emolga","49/113","Legendary Treasures","legendarytreasures","049",4],
+["Hydreigon","99/113","Legendary Treasures","legendarytreasures","099",4],
+["Joltik","50/135","Plasma Storm","plasmastorm","050",4],
+["Pidove","123/149","Boundaries Crossed","boundariescrossed","123",4],
+["Trubbish","53/124","Dragons Exalted","dragonsexalted","053",4],
+["Audino","108/124","Dragons Exalted","dragonsexalted","108",4],
+["Drilbur","55/108","Dark Explorers","darkexplorers","055",4],
+["Timburr","62/101","Noble Victories","noblevictories","062",4],
+["Pawniard","81/101","Noble Victories","noblevictories","081",4],
+["Kricketune","24/102","Triumphant","triumphant","024",5],
+["Kricketot","65/102","Triumphant","triumphant","065",5],
+["Hariyama","14/90","Undaunted","undaunted","014",5],
+["Makuhita","55/90","Undaunted","undaunted","055",5],
+["Tauros","41/95","Unleashed","unleashed","041",5],
+["Butterfree","16/123","HeartGold SoulSilver","heartgoldsoulsilver","016",5],
+["Metapod","46/123","HeartGold SoulSilver","heartgoldsoulsilver","046",5],
+["Caterpie","57/123","HeartGold SoulSilver","heartgoldsoulsilver","057",5],
+["Haunter","41/99","Arceus","arceus","041",5],
+["Burmy (Sandy Cloak)","57/99","Arceus","arceus","057",5],
+["Croagunk","61/99","Arceus","arceus","061",5],
+["Gabite","59/147","Supreme Victors","supremevictors","059",5],
+["Marshtomp","67/147","Supreme Victors","supremevictors","067",5],
+["Nincada","117/147","Supreme Victors","supremevictors","117",5],
+["Rhyhorn","122/147","Supreme Victors","supremevictors","122",5],
+["Munchlax","69/111","Rising Rivals","risingrivals","069",5],
+["Shellos (East Sea)","79/111","Rising Rivals","risingrivals","079",5],
+["Spheal","82/111","Rising Rivals","risingrivals","082",5],
+["Banette","19/127","Platinum","platinum","019",5],
+["Poochyena","86/127","Platinum","platinum","086",5],
+["Psyduck","87/127","Platinum","platinum","087",5],
+["Shelgon","50/100","Stormfront","stormfront","050",5],
+["Cherubi","56/100","Stormfront","stormfront","056",5],
+["Magikarp","65/100","Stormfront","stormfront","065",5],
+["Stunky","76/100","Stormfront","stormfront","076",5],
+["Pachirisu","43/100","Majestic Dawn","majesticdawn","043",5],
+["Aipom","50/100","Majestic Dawn","majesticdawn","050",5],
+["Metang","35/108","EX Power Keepers","expowerkeepers","035",6],
+["Aron","42/108","EX Power Keepers","expowerkeepers","042",6],
+["Skitty","62/108","EX Power Keepers","expowerkeepers","062",6],
+["Slakoth","63/108","EX Power Keepers","expowerkeepers","063",6],
+["Vibrava (Delta)","24/101","EX Dragon Frontiers","exdragonfrontiers","024",6],
+["Horsea (Delta)","31/101","EX Dragon Frontiers","exdragonfrontiers","031",6],
+["Dratini (Delta)","46/101","EX Dragon Frontiers","exdragonfrontiers","046",6],
+["Wooper (Delta)","71/101","EX Dragon Frontiers","exdragonfrontiers","071",6],
+["Dugtrio","5/100","EX Crystal Guardians","excrystalguardians","005",6],
+["Nuzleaf","39/100","EX Crystal Guardians","excrystalguardians","039",6],
+["Cacnea","47/100","EX Crystal Guardians","excrystalguardians","047",6],
+["Krabby","54/100","EX Crystal Guardians","excrystalguardians","054",6],
+["Furret","33/92","EX Legend Maker","exlegendmaker","033",6],
+["Kecleon","37/92","EX Legend Maker","exlegendmaker","037",6],
+["Grimer","54/92","EX Legend Maker","exlegendmaker","054",6],
+["Sentret","62/92","EX Legend Maker","exlegendmaker","062",6],
+["Trapinch","67/92","EX Legend Maker","exlegendmaker","067",6],
+["Drowzee","67/113","EX Delta Species","exdeltaspecies","067",6],
+["Sandshrew","82/113","EX Delta Species","exdeltaspecies","082",6],
+["Taillow","86/113","EX Delta Species","exdeltaspecies","086",6],
+["Zubat","88/113","EX Delta Species","exdeltaspecies","088",6],
+["Phanpy","15/17","POP Series 2","popseries2","015",6],
+["Sudowoodo","15/115","EX Unseen Forces","exunseenforces","015",6],
+["Magcargo","41/115","EX Unseen Forces","exunseenforces","041",6],
+["Miltank","42/115","EX Unseen Forces","exunseenforces","042",6],
+["Slugma","73/115","EX Unseen Forces","exunseenforces","073",6],
+["Camerupt","4/107","EX Deoxys","exdeoxys","004",6],
+["Pelipper","21/107","EX Deoxys","exdeoxys","021",6],
+["Carvanha","56/107","EX Deoxys","exdeoxys","056",6],
+["Numel","68/107","EX Deoxys","exdeoxys","068",6],
+["Wingull","81/107","EX Deoxys","exdeoxys","081",6],
+["Pokemon Card Fan","8/32","Play Promotional","playpromotional","008",6],
+["Piloswine","13/109","EX Team Rocket Returns","exteamrocketreturns","013",6],
+["Yanma","28/109","EX Team Rocket Returns","exteamrocketreturns","028",6],
+["Heracross","43/109","EX Team Rocket Returns","exteamrocketreturns","043",6],
+["Houndour","60/109","EX Team Rocket Returns","exteamrocketreturns","060",6],
+["Swinub","79/109","EX Team Rocket Returns","exteamrocketreturns","079",6],
+["Exeggutor","5/112","EX FireRed & LeafGreen","exfireredandleafgreen","005",6],
+["Victreebel","17/112","EX FireRed & LeafGreen","exfireredandleafgreen","017",6],
+["Exeggcute","33/112","EX FireRed & LeafGreen","exfireredandleafgreen","033",6],
+["Weepinbell","51/112","EX FireRed & LeafGreen","exfireredandleafgreen","051",6],
+["Bellsprout","53/112","EX FireRed & LeafGreen","exfireredandleafgreen","053",6],
+["Exploud","6/101","EX Hidden Legends","exhiddenlegends","006",6],
+["Loudred","39/101","EX Hidden Legends","exhiddenlegends","039",6],
+["Feebas","61/101","EX Hidden Legends","exhiddenlegends","061",6],
+["Whismur","82/101","EX Hidden Legends","exhiddenlegends","082",6],
+["Whiscash","48/97","EX Dragon","exdragon","048",6],
+["Barboach","51/97","EX Dragon","exdragon","051",6],
+["Magnemite","61/97","EX Dragon","exdragon","061",6],
+["Ludicolo","7/100","EX Sandstorm","exsandstorm","007",6],
+["Lombre","45/100","EX Sandstorm","exsandstorm","045",6],
+["Lotad","66/100","EX Sandstorm","exsandstorm","066",6],
+["Diglett","50/144","Skyridge","skyridge","050",7],
+["Ditto","51/144","Skyridge","skyridge","051",7],
+["Dugtrio","52/144","Skyridge","skyridge","052",7],
+["Golbat","60/144","Skyridge","skyridge","060",7],
+["Granbull","61/144","Skyridge","skyridge","061",7],
+["Murkrow","79/144","Skyridge","skyridge","079",7],
+["Venonat","112/144","Skyridge","skyridge","112",7],
+["Primeape","29/147","Aquapolis","aquapolis","029",7],
+["Tyrogue","63/147","Aquapolis","aquapolis","063",7],
+["Hitmonchan","81/147","Aquapolis","aquapolis","081",7],
+["Hitmontop","82/147","Aquapolis","aquapolis","082",7],
+["Mankey","92/147","Aquapolis","aquapolis","092",7],
+["Tangela","112/147","Aquapolis","aquapolis","112",7],
+["Pidgeot","23/165","Expedition","expedition","023",7],
+["Pidgeot","59/165","Expedition","expedition","059",7],
+["Charmeleon","73/165","Expedition","expedition","073",7],
+["Pidgeotto","88/165","Expedition","expedition","088",7],
+["Bulbasaur","95/165","Expedition","expedition","095",7],
+["Clefairy","101/165","Expedition","expedition","101",7],
+["Cubone","103/165","Expedition","expedition","103",7],
+["Magikarp","118/165","Expedition","expedition","118",7],
+["Pidgey","123/165","Expedition","expedition","123",7],
+["Moo-Moo Milk","155/165","Expedition","expedition","155",7],
+["Dark Omastar","19/105","Neo Destiny","neodestiny","019",7],
+["Dark Slowking","20/105","Neo Destiny","neodestiny","020",7],
+["Light Ledian","24/105","Neo Destiny","neodestiny","024",7],
+["Dark Omanyte","37/105","Neo Destiny","neodestiny","037",7],
+["Light Slowbro","51/105","Neo Destiny","neodestiny","051",7],
+["Ledyba","71/105","Neo Destiny","neodestiny","071",7],
+["Broken Ground Gym","92/105","Neo Destiny","neodestiny","092",7],
+["Pokemon Personality Test","102/105","Neo Destiny","neodestiny","102",7],
+["Delibird","5/64","Neo Revelation","neorevelation","005",7],
+["Jynx","31/64","Neo Revelation","neorevelation","031",7],
+["Octillery","34/64","Neo Revelation","neorevelation","034",7],
+["Snubbull","55/64","Neo Revelation","neorevelation","055",7],
+["Politoed","8/75","Neo Discovery","neodiscovery","008",7],
+["Politoed","27/75","Neo Discovery","neodiscovery","027",7],
+["Pineco","61/75","Neo Discovery","neodiscovery","061",7],
+["Slowpoke","73/111","Neo Genesis","neogenesis","073",7],
+["Focus Band","86/111","Neo Genesis","neogenesis","086",7],
+["Double Gust","100/111","Neo Genesis","neogenesis","100",7],
+["Moo-Moo Milk","101/111","Neo Genesis","neogenesis","101",7],
+["Pokemon March","102/111","Neo Genesis","neogenesis","102",7],
+["Psyduck","286/SM-P","SM Promo","smpromo","286",8],
+["Psyduck","XY-P","XY Promo","xypromo","u048",8],
+["Tyrogue","23/47","P Promos","ppromos","023",8],
+["Touch Generation Turn!","27/P","P Promos","ppromos","027",8],
+["Farfetch'd","---","Miscellaneous Promos 1998","miscellaneouspromos1998","009",8],
+["Touch Generation Turn!","---","Miscellaneous Promos 1998","miscellaneouspromos1998","013",8],
+["Janine's Beedrill","61/141","VS","vs","061",8],
+["Janine's Arbok","62/141","VS","vs","062",8],
+["Janine's Venomoth","63/141","VS","vs","063",8],
+["Janine's Weezing","64/141","VS","vs","064",8],
+["Janine's Ariados","65/141","VS","vs","065",8],
+["Janine's Crobat","66/141","VS","vs","066",8],
+["Janine's Shuckle","67/141","VS","vs","067",8],
+["Moo-Moo Milk","131/141","VS","vs","131",8],
+["Growlithe","10","Vending Machine Set 3","vendingmachineset3","010",8],
+["Seadra","16","Vending Machine Set 3","vendingmachineset3","016",8],
+["Machoke","28","Vending Machine Set 3","vendingmachineset3","028",8],
+["Rhydon","31","Vending Machine Set 3","vendingmachineset3","031",8],
+["Koffing","3","Vending Machine Set 2","vendingmachineset2","003",8],
+["Voltorb","16","Vending Machine Set 2","vendingmachineset2","016",8],
+["Machop","21","Vending Machine Set 2","vendingmachineset2","021",8],
+["Onix","24","Vending Machine Set 2","vendingmachineset2","024",8],
+["Weedle","4","Vending Machine Set 1","vendingmachineset1","004",8],
+["Doduo","28","Vending Machine Set 1","vendingmachineset1","028",8],
+["Chansey","31","Vending Machine Set 1","vendingmachineset1","031",8],
+["Smeargle","32","Wizards Promos","wizardspromos","032",8],
+["Machamp","43","Wizards Promos","wizardspromos","043",8]
+];
+
+(function() {
+  var collected = {};
+  var TOTAL = CARDS.length;
+
+  function loadState() {
+    try {
+      var d = localStorage.getItem("komiya-tcg");
+      if (d) collected = JSON.parse(d);
+    } catch(e) { collected = {}; }
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem("komiya-tcg", JSON.stringify(collected));
+    } catch(e) {}
+  }
+
+  function cardId(c) {
+    return c[2] + "|" + c[1];
+  }
+
+  function getLocalId(num) {
+    if (num.indexOf("/") !== -1) {
+      var left = num.split("/")[0];
+      if (/^[A-Za-z]/.test(left)) return left;
+      return String(parseInt(left, 10));
+    }
+    if (/^[A-Za-z]/.test(num)) return num;
+    var p = parseInt(num, 10);
+    return isNaN(p) ? num : String(p);
+  }
+
+  function ptcgUrl(c) {
+    var sid = SET_IDS[c[2]];
+    if (!sid) return null;
+    return "https://images.pokemontcg.io/" + sid + "/" + getLocalId(c[1]) + "_hires.png";
+  }
+
+  function serebiiImg(c) {
+    return "https://www.serebii.net/card/" + c[3] + "/" + c[4] + ".jpg";
+  }
+
+  function serebiiPage(c) {
+    return "https://www.serebii.net/card/" + c[3] + "/" + c[4] + ".shtml";
+  }
+
+  function updateTotalProgress() {
+    var count = Object.keys(collected).length;
+    var pct = TOTAL > 0 ? Math.round(count / TOTAL * 100) : 0;
+    document.getElementById("progress-count").textContent =
+      count + " / " + TOTAL + " collected (" + pct + "%)";
+    document.getElementById("progress-fill").style.width = pct + "%";
+  }
+
+  function updateSetProgress(section) {
+    var all = section.querySelectorAll(".card");
+    var done = section.querySelectorAll(".card.collected");
+    var el = section.querySelector(".set-progress");
+    if (el) {
+      el.textContent = done.length + "/" + all.length;
+      if (done.length === all.length && all.length > 0) {
+        section.classList.add("set-complete");
+      } else {
+        section.classList.remove("set-complete");
+      }
+    }
+  }
+
+  function setupImage(img, card, container) {
+    var primary = ptcgUrl(card);
+    var fallback = serebiiImg(card);
+
+    function showPlaceholder() {
+      img.style.display = "none";
+      var ph = document.createElement("div");
+      ph.className = "card-placeholder";
+      var n = document.createElement("span");
+      n.className = "placeholder-name";
+      n.textContent = card[0];
+      var num = document.createElement("span");
+      num.className = "placeholder-num";
+      num.textContent = card[1];
+      ph.appendChild(n);
+      ph.appendChild(num);
+      container.appendChild(ph);
+    }
+
+    function tryFallback() {
+      img.removeEventListener("error", tryFallback);
+      img.src = fallback;
+      img.addEventListener("error", function onFail() {
+        img.removeEventListener("error", onFail);
+        showPlaceholder();
+      });
+    }
+
+    if (primary) {
+      img.addEventListener("error", tryFallback);
+      img.src = primary;
+    } else {
+      img.addEventListener("error", function onFail() {
+        img.removeEventListener("error", onFail);
+        showPlaceholder();
+      });
+      img.src = fallback;
+    }
+  }
+
+  function createCard(card) {
+    var cid = cardId(card);
+    var isCollected = !!collected[cid];
+
+    var div = document.createElement("div");
+    div.className = "card" + (isCollected ? " collected" : "");
+    div.setAttribute("data-name", card[0].toLowerCase());
+    div.setAttribute("data-set", card[2].toLowerCase());
+
+    var link = document.createElement("a");
+    link.className = "card-link";
+    link.href = serebiiPage(card);
+    link.target = "_blank";
+    link.rel = "noopener";
+
+    var img = document.createElement("img");
+    img.className = "card-img";
+    img.alt = card[0] + " - " + card[2];
+    img.loading = "lazy";
+    img.decoding = "async";
+    setupImage(img, card, link);
+    link.appendChild(img);
+
+    var overlay = document.createElement("div");
+    overlay.className = "collected-overlay";
+    overlay.textContent = "COLLECTED";
+    link.appendChild(overlay);
+
+    div.appendChild(link);
+
+    var cb = document.createElement("div");
+    cb.className = "card-checkbox";
+    var cm = document.createElement("span");
+    cm.className = "checkmark";
+    cm.textContent = isCollected ? "✓" : "";
+    cb.appendChild(cm);
+    cb.addEventListener("click", function(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      var id = cid;
+      if (collected[id]) {
+        delete collected[id];
+        div.classList.remove("collected");
+        cm.textContent = "";
+      } else {
+        collected[id] = 1;
+        div.classList.add("collected");
+        cm.textContent = "✓";
+      }
+      saveState();
+      updateTotalProgress();
+      var sec = div.closest(".set-section");
+      if (sec) updateSetProgress(sec);
+    });
+    div.appendChild(cb);
+
+    var info = document.createElement("div");
+    info.className = "card-info";
+    var nm = document.createElement("span");
+    nm.className = "card-name";
+    nm.textContent = card[0];
+    nm.title = card[0];
+    info.appendChild(nm);
+    var numEl = document.createElement("span");
+    numEl.className = "card-num";
+    numEl.textContent = card[1];
+    info.appendChild(numEl);
+    div.appendChild(info);
+
+    return div;
+  }
+
+  function renderAll() {
+    var container = document.getElementById("container");
+    container.innerHTML = "";
+
+    var currentEra = -1;
+    var currentSet = null;
+    var eraDiv = null;
+    var setDiv = null;
+    var grid = null;
+
+    for (var i = 0; i < CARDS.length; i++) {
+      var c = CARDS[i];
+      var era = c[5];
+      var setName = c[2];
+
+      if (era !== currentEra) {
+        currentEra = era;
+        currentSet = null;
+        eraDiv = document.createElement("div");
+        eraDiv.className = "era-section";
+        var eh = document.createElement("h2");
+        eh.className = "era-header";
+        eh.textContent = ERA_NAMES[era];
+        eraDiv.appendChild(eh);
+        container.appendChild(eraDiv);
+      }
+
+      if (setName !== currentSet) {
+        currentSet = setName;
+        setDiv = document.createElement("div");
+        setDiv.className = "set-section";
+
+        var sh = document.createElement("div");
+        sh.className = "set-header";
+        var sn = document.createElement("h3");
+        sn.textContent = setName;
+        sh.appendChild(sn);
+        var sp = document.createElement("span");
+        sp.className = "set-progress";
+        sp.textContent = "0/0";
+        sh.appendChild(sp);
+        setDiv.appendChild(sh);
+
+        grid = document.createElement("div");
+        grid.className = "card-grid";
+        setDiv.appendChild(grid);
+
+        eraDiv.appendChild(setDiv);
+      }
+
+      grid.appendChild(createCard(c));
+    }
+
+    var sets = container.querySelectorAll(".set-section");
+    for (var j = 0; j < sets.length; j++) {
+      updateSetProgress(sets[j]);
+    }
+  }
+
+  function applyFilter(query) {
+    var cards = document.querySelectorAll(".card");
+    for (var i = 0; i < cards.length; i++) {
+      var name = cards[i].getAttribute("data-name");
+      var set = cards[i].getAttribute("data-set");
+      var match = !query || name.indexOf(query) !== -1 || set.indexOf(query) !== -1;
+      if (match) {
+        cards[i].classList.remove("filt-hidden");
+      } else {
+        cards[i].classList.add("filt-hidden");
+      }
+    }
+
+    var sets = document.querySelectorAll(".set-section");
+    for (var j = 0; j < sets.length; j++) {
+      var hasVisible = sets[j].querySelector(".card:not(.filt-hidden)");
+      if (hasVisible) {
+        sets[j].classList.remove("filt-hidden");
+      } else {
+        sets[j].classList.add("filt-hidden");
+      }
+    }
+
+    var eras = document.querySelectorAll(".era-section");
+    for (var k = 0; k < eras.length; k++) {
+      var hasVisSet = eras[k].querySelector(".set-section:not(.filt-hidden)");
+      if (hasVisSet) {
+        eras[k].classList.remove("filt-hidden");
+      } else {
+        eras[k].classList.add("filt-hidden");
+      }
+    }
+  }
+
+  function init() {
+    loadState();
+    renderAll();
+    updateTotalProgress();
+
+    var searchEl = document.getElementById("search");
+    var timer = null;
+    searchEl.addEventListener("input", function() {
+      clearTimeout(timer);
+      var q = searchEl.value.toLowerCase().trim();
+      timer = setTimeout(function() { applyFilter(q); }, 120);
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
