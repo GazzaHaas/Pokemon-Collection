@@ -559,10 +559,6 @@ var CARDS=[
     "30th Celebration Japan":1
   };
 
-  var HOLO_RARES = {};
-
-  var NO_PCOM_CDN = {};
-
   var OVERRIDE_IMAGES = {
     "Mega Evolution|67/132":"https://archives.bulbagarden.net/media/upload/7/73/GimmighoulMegaEvolution67.jpg",
     "Mega Evolution|99/132":"https://archives.bulbagarden.net/media/upload/c/cd/GholdengoMegaEvolution99.jpg",
@@ -588,7 +584,6 @@ var CARDS=[
     var name = card[0];
     if (/ V-UNION$/.test(name) || / V$/.test(name) || / GX$/.test(name) ||
         / VMAX$/.test(name) || / VSTAR$/.test(name) || / ex$/.test(name)) return 0;
-    if (HOLO_RARES[cardId(card)]) return 3;
     return 1;
   }
 
@@ -666,7 +661,7 @@ var CARDS=[
 
   function pokemonComImg(c) {
     var sid = SET_IDS[c[2]];
-    if (!sid || NO_PCOM_CDN[sid]) return null;
+    if (!sid) return null;
     var code = pcomCode(sid);
     var num = parseInt(getLocalId(c[1]), 10);
     if (isNaN(num)) return null;

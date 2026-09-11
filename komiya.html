@@ -848,7 +848,8 @@ var CARDS=[
     "Play Promotional|8/32":"https://archives.bulbagarden.net/media/upload/0/0d/Pok%C3%A9monCardFanPLAYPromo8.jpg",
     "P Promos|27/P":"https://archives.bulbagarden.net/media/upload/a/a6/TouchGenerationChangeParentChildPromo.jpg",
     "Miscellaneous Promos 1998|009":"images/farfetchd-corocoro-1998.jpg",
-    "Miscellaneous Promos 1998|013":"images/touch-generation-1998.jpg"
+    "Miscellaneous Promos 1998|013":"images/touch-generation-1998.jpg",
+    "Crown Zenith|GG4/GG70":"https://archives.bulbagarden.net/media/upload/6/64/OricorioCrownZenithGG4.jpg"
   };
 
   function getVariants(card) {
@@ -909,16 +910,6 @@ var CARDS=[
     var val = collected[cid] || 0;
     if (val === 0) return false;
     return !isFullyCollected(cid, card);
-  }
-
-  function countOwnedVariants(cid, card) {
-    var val = collected[cid] || 0;
-    var bits = variantBitsForCard(card);
-    var count = 0;
-    for (var i = 0; i < bits.length; i++) {
-      if (val & bits[i]) count++;
-    }
-    return count;
   }
 
   function loadState() {

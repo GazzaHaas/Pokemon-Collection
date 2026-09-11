@@ -542,9 +542,7 @@ var CARDS=[
     "SV Promos":1,"SWSH Promos":1,"Mega Promos":1,"30th Celebration Japan":1
   };
 
-  var HOLO_RARES = {};
-
-  var NO_PCOM_CDN = {"neo1":1,"neo2":1,"neo3":1,"neo4":1,"ecard1":1,"ecard2":1,"ecard3":1,"basep":1,"swshp":1,"smp":1,"xyp":1,"bwp":1};
+  var NO_PCOM_CDN = {"swshp":1};
 
   var OVERRIDE_IMAGES = {
     "Storm Emeralda|46/76":"https://archives.bulbagarden.net/media/upload/7/77/SableyeStormEmeralda46.jpg",
@@ -573,7 +571,6 @@ var CARDS=[
     var name = card[0];
     if (/ V-UNION$/.test(name) || / V$/.test(name) || / GX$/.test(name) ||
         / VMAX$/.test(name) || / VSTAR$/.test(name) || / ex$/.test(name)) return 0;
-    if (HOLO_RARES[cardId(card)]) return 3;
     return 1;
   }
 
@@ -607,16 +604,6 @@ var CARDS=[
     var val = collected[cid] || 0;
     if (val === 0) return false;
     return !isFullyCollected(cid, card);
-  }
-
-  function countOwnedVariants(cid, card) {
-    var val = collected[cid] || 0;
-    var bits = variantBitsForCard(card);
-    var count = 0;
-    for (var i = 0; i < bits.length; i++) {
-      if (val & bits[i]) count++;
-    }
-    return count;
   }
 
   function loadState() {

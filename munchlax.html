@@ -495,16 +495,11 @@ var CARDS=[
   var currentFilter = "all";
   var currentEra = "all";
 
-  var NORMAL_ONLY_SETS = {};
-
-  var HOLO_RARES = {};
-
   function getVariants(card) {
     var setName = card[2];
     var num = card[1];
     var era = card[5];
     if (era === 8) return 0;
-    if (NORMAL_ONLY_SETS[setName]) return 0;
     if (num.indexOf("/") !== -1) {
       var parts = num.split("/");
       var left = parts[0];
@@ -517,7 +512,6 @@ var CARDS=[
     if (/ V-UNION$/.test(name) || / V$/.test(name) || / GX$/.test(name) ||
         / VMAX$/.test(name) || / VSTAR$/.test(name) || / ex$/.test(name) ||
         / Lv\.X$/.test(name)) return 0;
-    if (HOLO_RARES[cardId(card)]) return 3;
     return 1;
   }
 
