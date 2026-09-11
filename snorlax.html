@@ -32,7 +32,7 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('images/pokeball-bg.jpg') center center / cover no-repeat;
+  background: url('images/snorlax-bg.jpg') 30% center / cover no-repeat;
   opacity: 0.3;
   z-index: 0;
   pointer-events: none;
@@ -99,9 +99,7 @@ main {
   height: 150px;
   text-decoration: none;
   box-shadow: 0 2px 12px rgba(0,0,0,0.5);
-  border: 1px solid rgba(255,203,5,0.15);
   transition: transform 0.15s;
-  background: #1a1a2e;
 }
 .tile:active {
   transform: scale(0.98);
@@ -115,6 +113,8 @@ main {
   object-fit: cover;
   display: block;
 }
+#tile-snorlax img { object-position: center 32%; }
+#tile-munchlax img { object-position: center 9%; }
 </style>
 </head>
 <body>
@@ -129,5 +129,10 @@ main {
     <img src="images/munchlax-tile.jpg" alt="Munchlax">
   </a>
 </main>
+<script>
+document.querySelectorAll('.tile').forEach(function(t) {
+  t.addEventListener('click', function(e) { e.preventDefault(); window.location.href = this.href; });
+});
+</script>
 </body>
 </html>
