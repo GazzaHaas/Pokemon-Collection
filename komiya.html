@@ -788,6 +788,40 @@ var CARDS=[
 
   var BULBA_SETS = {"VS":"VS","Vending Machine Set 1":"Vending_S1","Vending Machine Set 2":"Vending_S2","Vending Machine Set 3":"Vending_S3","SM Promo":"SM-P_Promo","XY Promo":"XY-P_Promo","P Promos":"P_Promotional","Wizards Promos":"Wizards_Promo","Play Promotional":null,"Miscellaneous Promos 1998":null,"Storm Emeralda":null,"30th Celebration":null};
 
+  var OVERRIDE_IMAGES = {
+    "VS|61/141":"https://archives.bulbagarden.net/media/upload/4/42/JanineBeedrillTyranitarHalfDeck.jpg",
+    "VS|62/141":"https://archives.bulbagarden.net/media/upload/f/f4/JanineArbokVS62.jpg",
+    "VS|63/141":"https://archives.bulbagarden.net/media/upload/e/eb/JanineVenomothVS63.jpg",
+    "VS|64/141":"https://archives.bulbagarden.net/media/upload/5/59/JanineWeezingVS64.jpg",
+    "VS|65/141":"https://archives.bulbagarden.net/media/upload/0/07/JanineAriadosVS65.jpg",
+    "VS|66/141":"https://archives.bulbagarden.net/media/upload/8/83/JanineCrobatVS66.jpg",
+    "VS|67/141":"https://archives.bulbagarden.net/media/upload/8/84/JanineShuckleVS67.jpg",
+    "VS|131/141":"https://archives.bulbagarden.net/media/upload/a/ad/MoomooMilkGoldSilverNewWorld.jpg",
+    "Vending Machine Set 3|10":"https://archives.bulbagarden.net/media/upload/6/67/GrowlitheVendingS3.jpg",
+    "Vending Machine Set 3|16":"https://archives.bulbagarden.net/media/upload/1/18/SeadraVendingS3.jpg",
+    "Vending Machine Set 3|28":"https://archives.bulbagarden.net/media/upload/a/a7/MachokeVendingS3.jpg",
+    "Vending Machine Set 3|31":"https://archives.bulbagarden.net/media/upload/7/7d/RhydonVendingS3.jpg",
+    "Vending Machine Set 2|3":"https://archives.bulbagarden.net/media/upload/7/7b/KoffingVending2.jpg",
+    "Vending Machine Set 2|16":"https://archives.bulbagarden.net/media/upload/b/bf/VoltorbVendingS2.jpg",
+    "Vending Machine Set 2|21":"https://archives.bulbagarden.net/media/upload/6/61/MachopVendingS2.jpg",
+    "Vending Machine Set 2|24":"https://archives.bulbagarden.net/media/upload/4/49/OnixVendingS2.jpg",
+    "Vending Machine Set 1|4":"https://archives.bulbagarden.net/media/upload/5/53/WeedleVendingS1.jpg",
+    "Vending Machine Set 1|28":"https://archives.bulbagarden.net/media/upload/2/2b/DoduoVendingS1.jpg",
+    "Vending Machine Set 1|31":"https://archives.bulbagarden.net/media/upload/d/d8/ChanseyVendingS1.jpg",
+    "P Promos|23/47":"https://archives.bulbagarden.net/media/upload/5/58/TyroguePPromo23.jpg",
+    "SM Promo|286/SM-P":"https://archives.bulbagarden.net/media/upload/0/07/PsyduckSMPromo286.jpg",
+    "XY Promo|XY-P":"https://archives.bulbagarden.net/media/upload/1/1a/PsyduckXYPromo.jpg",
+    "Wizards Promos|32":"https://archives.bulbagarden.net/media/upload/3/36/SmeargleWizardsPromo32.jpg",
+    "Wizards Promos|43":"https://archives.bulbagarden.net/media/upload/9/90/MachampWizardsPromo43.jpg",
+    "Storm Emeralda|88/76":"https://archives.bulbagarden.net/media/upload/d/d6/KecleonStormEmeralda88.jpg",
+    "30th Celebration|32/128":"https://archives.bulbagarden.net/media/upload/4/48/Pikachu30thCelebration32.jpg",
+    "Phantasmal Flames|19/94":"https://archives.bulbagarden.net/media/upload/4/4b/CharcadetInfernoX19.jpg",
+    "Phantasmal Flames|57/94":"https://archives.bulbagarden.net/media/upload/f/fb/MurkrowMEGAStarterSet4.jpg",
+    "Mega Evolution|37/132":"https://archives.bulbagarden.net/media/upload/3/37/ClauncherMegaEvolution37.jpg",
+    "Play Promotional|8/32":"https://archives.bulbagarden.net/media/upload/0/0d/Pok%C3%A9monCardFanPLAYPromo8.jpg",
+    "P Promos|27/P":"https://archives.bulbagarden.net/media/upload/a/a6/TouchGenerationChangeParentChildPromo.jpg"
+  };
+
   function getVariants(card) {
     var setName = card[2];
     var num = card[1];
@@ -988,10 +1022,11 @@ var CARDS=[
   }
 
   function setupImage(img, card, container) {
+    var override = OVERRIDE_IMAGES[cardId(card)];
     var pcom = pokemonComImg(card);
     var ptcg = ptcgUrl(card);
-    var primary = pcom || ptcg;
-    var fallback = pcom ? ptcg : null;
+    var primary = override || pcom || ptcg;
+    var fallback = override ? null : (pcom ? ptcg : null);
 
     function showPlaceholder() {
       img.style.display = "none";

@@ -488,7 +488,7 @@ noscript {
   <noscript>Please enable JavaScript to use this collection tracker.</noscript>
 </main>
 <footer>
-  <p>16 Gholdengo &amp; Gimmighoul cards &middot; Data from <a href="https://www.serebii.net/" target="_blank" rel="noopener">Serebii.net</a></p>
+  <p>16 Gholdengo &amp; Gimmighoul cards &middot; Data from <a href="https://www.pokemon.com/us/pokemon-tcg/pokemon-cards" target="_blank" rel="noopener">Pokemon.com</a> &amp; <a href="https://pokemontcg.io/" target="_blank" rel="noopener">pokemontcg.io</a></p>
 </footer>
 <script>
 var SET_IDS={"Paradox Rift":"sv4","Paldean Fates":"sv4pt5","Surging Sparks":"sv8","Prismatic Evolutions":"sv8pt5","Mega Evolution":"me1"};
@@ -531,6 +531,16 @@ var CARDS=[
   };
 
   var HOLO_RARES = {};
+
+  var NO_PCOM_CDN = {};
+
+  var BULBA_SETS = {"30th Celebration Japan":null};
+
+  var OVERRIDE_IMAGES = {
+    "Mega Evolution|67/132":"https://archives.bulbagarden.net/media/upload/7/73/GimmighoulMegaEvolution67.jpg",
+    "Mega Evolution|99/132":"https://archives.bulbagarden.net/media/upload/c/cd/GholdengoMegaEvolution99.jpg",
+    "30th Celebration|142/128":"https://archives.bulbagarden.net/media/upload/0/0c/Gholdengo30thCelebration142.jpg"
+  };
 
   function getVariants(card) {
     var setName = card[2];
@@ -619,13 +629,56 @@ var CARDS=[
     return "https://images.pokemontcg.io/" + sid + "/" + getLocalId(c[1]) + "_hires.png";
   }
 
-  function serebiiImg(c) {
-    var num = c[4].replace(/^[a-zA-Z]+/, '').replace(/^0+(?=\d)/, '');
-    return "https://www.serebii.net/card/" + c[3] + "/" + num + ".jpg";
+  function pcomCode(ptcgId) {
+    var u = ptcgId.toUpperCase();
+    if (/^SV\d$/.test(u)) return "SV0" + u.charAt(2);
+    return u;
   }
 
-  function serebiiPage(c) {
-    return "https://www.serebii.net/card/" + c[3] + "/" + c[4] + ".shtml";
+  function pokemonComImg(c) {
+    var sid = SET_IDS[c[2]];
+    if (!sid || NO_PCOM_CDN[sid]) return null;
+    var code = pcomCode(sid);
+    var num = parseInt(getLocalId(c[1]), 10);
+    if (isNaN(num)) return null;
+    return "https://assets.pokemon.com/static-assets/content-assets/cms2/img/cards/web/" + code + "/" + code + "_EN_" + num + ".png";
+  }
+
+  function getSeries(ptcgId) {
+    if (/^swsh/.test(ptcgId)) return "ss-series";
+    if (/^sv/.test(ptcgId)) return "sv-series";
+    if (/^sm/.test(ptcgId) || ptcgId === "smp") return "sm-series";
+    if (/^xy/.test(ptcgId) || ptcgId === "xyp" || ptcgId === "g1") return "xy-series";
+    if (/^bw/.test(ptcgId) || ptcgId === "bwp") return "bw-series";
+    if (/^ex/.test(ptcgId)) return "ex-series";
+    if (/^hgss/.test(ptcgId)) return "hgss-series";
+    if (/^dp/.test(ptcgId) || /^pl/.test(ptcgId)) return "dp-series";
+    if (/^pop/.test(ptcgId)) return "pop-series";
+    if (/^neo/.test(ptcgId)) return "neo-series";
+    if (/^ecard/.test(ptcgId)) return "e-card-series";
+    if (/^base/.test(ptcgId)) return "base-series";
+    if (ptcgId === "pgo") return "sm-series";
+    if (/^me/.test(ptcgId) || /^zsv/.test(ptcgId)) return "sv-series";
+    return null;
+  }
+
+  function cardInfoUrl(c) {
+    var sid = SET_IDS[c[2]];
+    if (sid) {
+      var series = getSeries(sid);
+      if (series) {
+        var localId = getLocalId(c[1]);
+        var num = parseInt(localId, 10);
+        if (!isNaN(num)) return "https://www.pokemon.com/us/pokemon-tcg/pokemon-cards/" + series + "/" + sid + "/" + num;
+      }
+    }
+    var bulbaSet = BULBA_SETS[c[2]];
+    if (bulbaSet) {
+      var name = c[0].replace(/ /g, "_");
+      var promoNum = c[1].replace(/[^0-9]/g, "");
+      if (promoNum) return "https://bulbapedia.bulbagarden.net/wiki/" + name + "_(" + bulbaSet + "_" + promoNum + ")";
+    }
+    return "https://bulbapedia.bulbagarden.net/w/index.php?search=" + encodeURIComponent(c[0] + " " + c[2] + " Pokemon card");
   }
 
   function updateTotalProgress() {
@@ -655,8 +708,12 @@ var CARDS=[
   }
 
   function setupImage(img, card, container) {
-    var primary = ptcgUrl(card);
-    var fallback = serebiiImg(card);
+    var override = OVERRIDE_IMAGES[cardId(card)];
+    var pcom = pokemonComImg(card);
+    var ptcg = ptcgUrl(card);
+    var primary = override || pcom || ptcg;
+    var fallback = override ? null : (pcom ? ptcg : null);
+
     function showPlaceholder() {
       img.style.display = "none";
       var ph = document.createElement("div");
@@ -671,31 +728,40 @@ var CARDS=[
       ph.appendChild(num);
       container.appendChild(ph);
     }
+
+    function isCardBack() {
+      return img.naturalWidth === 640 && img.naturalHeight === 892;
+    }
+
     function tryFallback() {
       img.removeEventListener("error", tryFallback);
-      img.removeEventListener("load", checkCardBack);
-      img.src = fallback;
-      img.addEventListener("error", function onFail() {
-        img.removeEventListener("error", onFail);
+      img.removeEventListener("load", onPrimaryLoad);
+      if (fallback) {
+        img.addEventListener("error", function onFail() {
+          img.removeEventListener("error", onFail);
+          showPlaceholder();
+        });
+        img.addEventListener("load", function onFallbackLoad() {
+          img.removeEventListener("load", onFallbackLoad);
+          if (isCardBack()) showPlaceholder();
+        });
+        img.src = fallback;
+      } else {
         showPlaceholder();
-      });
-    }
-    function checkCardBack() {
-      img.removeEventListener("load", checkCardBack);
-      if (img.naturalWidth === 640 && img.naturalHeight === 892) {
-        tryFallback();
       }
     }
+
+    function onPrimaryLoad() {
+      img.removeEventListener("load", onPrimaryLoad);
+      if (isCardBack()) tryFallback();
+    }
+
     if (primary) {
       img.addEventListener("error", tryFallback);
-      img.addEventListener("load", checkCardBack);
+      img.addEventListener("load", onPrimaryLoad);
       img.src = primary;
     } else {
-      img.addEventListener("error", function onFail() {
-        img.removeEventListener("error", onFail);
-        showPlaceholder();
-      });
-      img.src = fallback;
+      showPlaceholder();
     }
   }
 
@@ -801,7 +867,7 @@ var CARDS=[
 
     var link = document.createElement("a");
     link.className = "card-link";
-    link.href = serebiiPage(card);
+    link.href = cardInfoUrl(card);
     link.target = "_blank";
     link.rel = "noopener";
     var img = document.createElement("img");

@@ -519,6 +519,16 @@ var CARDS=[
 
   var BULBA_SETS = {"Storm Emeralda":null,"30th Celebration":null,"30th Celebration Japan":null,"Mega Promos":null};
 
+  var OVERRIDE_IMAGES = {
+    "Storm Emeralda|46/76":"https://archives.bulbagarden.net/media/upload/7/77/SableyeStormEmeralda46.jpg",
+    "30th Celebration|40/128":"https://archives.bulbagarden.net/media/upload/c/c7/Pikachu30thCelebration40.jpg",
+    "Mega Promos|24":"https://archives.bulbagarden.net/media/upload/1/17/OricorioexPhantasmalFlames110.jpg",
+    "Perfect Order|14/88":"https://archives.bulbagarden.net/media/upload/4/4a/TalonflamePerfectOrder14.jpg",
+    "Phantasmal Flames|74/94":"https://archives.bulbagarden.net/media/upload/e/e6/DuraludonInfernoX62.jpg",
+    "Mega Evolution|68/132":"https://archives.bulbagarden.net/media/upload/f/fe/SandshrewMegaEvolution68.jpg",
+    "30th Celebration Japan|165/103":"https://archives.bulbagarden.net/media/upload/4/49/MagikarpPaldeaEvolved203.jpg"
+  };
+
   function getVariants(card) {
     var setName = card[2];
     var num = card[1];
@@ -701,10 +711,11 @@ var CARDS=[
   }
 
   function setupImage(img, card, container) {
+    var override = OVERRIDE_IMAGES[cardId(card)];
     var pcom = pokemonComImg(card);
     var ptcg = ptcgUrl(card);
-    var primary = pcom || ptcg;
-    var fallback = pcom ? ptcg : null;
+    var primary = override || pcom || ptcg;
+    var fallback = override ? null : (pcom ? ptcg : null);
 
     function showPlaceholder() {
       img.style.display = "none";
