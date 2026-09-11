@@ -24,13 +24,17 @@ body {
   touch-action: none;
 }
 header {
-  position: relative;
-  z-index: 1;
-  background: rgba(13, 13, 13, 0.85);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  background: rgba(13, 13, 13, 0.97);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: none;
   padding: 0.8rem 1rem;
   text-align: center;
-  flex-shrink: 0;
 }
 header::after {
   content: "";
@@ -116,6 +120,7 @@ main {
 document.querySelectorAll('.tile').forEach(function(t) {
   t.addEventListener('click', function(e) { e.preventDefault(); window.location.href = this.href; });
 });
+(function(){var h=document.querySelector('header'),m=document.querySelector('main');function fix(){m.style.paddingTop=h.offsetHeight+'px';}fix();window.addEventListener('resize',fix);})();
 </script>
 </body>
 </html>
