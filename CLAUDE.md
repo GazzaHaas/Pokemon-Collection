@@ -1,32 +1,54 @@
 # Pokemon Collection Tracker
 
 ## Project Overview
-Multi-collection web app tracking Pokemon TCG cards across three collections. Deployed to GitHub Pages.
+Mobile-first web app tracking Pokemon TCG cards across three collections. Deployed to GitHub Pages.
 
 **Live site:** https://gazzahaas.github.io/Pokemon-Collection/
 **Deploy branch:** `claude/markdown-file-build-rdxkry`
 **Dev branch:** `claude/continue-previous-session-frew3s`
 
 ## File Structure
-- `index.html` — Landing page with 3 collection tiles showing live progress from localStorage
+- `index.html` — Landing page with 3 image-only tiles (no text overlay — names baked into artwork images)
 - `komiya.html` — Tomokazu Komiya collection (278 cards, all eras)
 - `kanda.html` — Shinji Kanda collection (33 cards, eras 0/1/8)
 - `gholdengo.html` — Gholdengo & Gimmighoul collection (16 cards, eras 0/8, Pokemon sub-filter)
 
 ## Architecture
+- Mobile-first design (forget about desktop for now per user)
 - Separate HTML files per collection — all HTML, CSS, and JS embedded (no build tools)
 - Each collection has its own localStorage key (`komiya-tcg`, `kanda-tcg`, `gholdengo-tcg`)
 - Additional per-collection keys for filter state: `{key}-filter`, `{key}-era`, and `gholdengo-tcg-pokemon`
 - Dark theme with Pokemon yellow (#ffcb05) accent, green (#3ecf8e) for collected state
 - Responsive grid: 2 columns mobile / 3 tablet / 4 desktop
+- Cards are `<div>` elements (not `<a>` links)
+
+## Landing Page (index.html)
+- 3 tiles linking to collection pages, pure `<img>` tags with artwork (names baked into images)
+- Tiles are 150px fixed height with `border-radius: 14px` and `overflow: hidden`
+- Pokeball background at 0.3 opacity via `body::before` pseudo-element
+- Komiya tile (portrait 864x1246 image) uses `height: 220%; top: -60%` to zoom out and show text
+- Kanda tile: `object-position: center 80%`
+- Gholdengo tile: `object-position: center 38%`
+
+## Collection Page Backgrounds
+Each collection page has its own unique background art (not pokeball):
+- `komiya.html` — `images/komiya-bg.jpg` (Psyduck Scream art), `center center`, opacity 0.3
+- `kanda.html` — `images/kanda-bg.jpg` (Magikarp waterfall art), `center 70%`, opacity 0.3
+- `gholdengo.html` — `images/gholdengo-bg.jpg` (cropped Gholdengo close-up with crossed arms), `center center`, opacity 0.3
+
+## Images Directory
+- **Card images (local overrides):** farfetchd-corocoro-1998.jpg, touch-generation-1998.jpg, gimmighoul-30th-067.webp, gholdengo-30th-087.jpg
+- **Tile artwork:** komiya-tile.jpg (864x1246), kanda-tile.jpg (960x1117), gholdengo-tile.jpg (960x1117)
+- **Backgrounds:** pokeball-bg.jpg (index only), komiya-bg.jpg, kanda-bg.jpg, gholdengo-bg.jpg
 
 ## Image Sources
 - **Primary:** pokemontcg.io CDN — `https://images.pokemontcg.io/{set_id}/{local_id}_hires.png`
 - **Fallback:** Serebii — `https://www.serebii.net/card/{folder}/{num}.jpg`
+- **OVERRIDE_IMAGES:** per-collection map for cards without online sources (local `images/` paths or Bulbapedia URLs)
 - Serebii image URLs need leading zeros and letter prefixes stripped (handled in `serebiiImg()`)
 - Serebii page URLs (.shtml) use the ORIGINAL padded numbers (handled in `serebiiPage()`)
 - NO inline `onerror` on img tags — all error handling via JS event listeners in `setupImage()`
-- 2 Komiya cards have no images (Miscellaneous Promos 1998: Farfetch'd, Touch Generation Turn!) — show placeholder
+- **0 placeholder cards** — all 327 cards across 3 collections have images
 
 ## Key Data Structures (in JS, per collection file)
 - `SET_IDS` — maps display set names to pokemontcg.io set IDs (e.g., `"Surging Sparks":"sv8"`)
@@ -35,6 +57,7 @@ Multi-collection web app tracking Pokemon TCG cards across three collections. De
 - `ERA_NAMES` — era display names (sparse array — only populated indices used per collection)
 - `NORMAL_ONLY_SETS` — sets where cards have no reverse holos (promos, Neo era, Japanese sets)
 - `HOLO_RARES` — cards verified as "Rare Holo" (Komiya has 13; Kanda/Gholdengo have none)
+- `OVERRIDE_IMAGES` — map of `cardId` → local/external image URL for cards without pokemontcg.io or Serebii images
 
 ## Variant Tracking
 - Bitmask-based: 1=Normal, 2=Holo, 4=Reverse Holo
@@ -62,6 +85,11 @@ Multi-collection web app tracking Pokemon TCG cards across three collections. De
 - `getVariants(card)` — determines which print variants a card has
 - `applyFilters()` — combines all active filters (text, status, era, pokemon)
 
+## OVERRIDE_IMAGES Counts
+- Komiya: 33 entries (including local paths for Misc Promos 1998 Farfetch'd and Touch Generation)
+- Kanda: 7 entries (Bulbapedia URLs)
+- Gholdengo: 5 entries (3 Bulbapedia URLs + 2 local paths for 30th Celebration Japan)
+
 ## Sets Without pokemontcg.io IDs (Serebii-only images)
 Storm Emeralda, 30th Celebration, 30th Celebration Japan, SM Promo, XY Promo, P Promos, Play Promotional, Miscellaneous Promos 1998, VS, Vending Machine Set 1/2/3, Mega Promos
 
@@ -69,3 +97,8 @@ Storm Emeralda, 30th Celebration, 30th Celebration Japan, SM Promo, XY Promo, P 
 - Komiya: 278 cards across 9 eras
 - Kanda: 33 cards across 3 eras (0=SV, 1=SWSH, 8=Japanese)
 - Gholdengo: 16 cards across 2 eras (0=SV, 8=Japanese) — 9 Gholdengo + 7 Gimmighoul
+
+## Notable Fixes Applied
+- Misc Promos 1998 cardId collision: Farfetch'd uses "009", Touch Generation uses "013" (were both "---")
+- Komiya tile zoom: portrait image in landscape tile uses `height: 220%; top: -60%` instead of `object-fit: contain`
+- All placeholder cards eliminated by downloading images locally or finding Bulbapedia URLs
