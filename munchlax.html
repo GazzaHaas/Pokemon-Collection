@@ -25,6 +25,18 @@ body {
   min-height: 100vh;
   touch-action: pan-y;
 }
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('images/munchlax-bg.jpg') center center / cover no-repeat;
+  opacity: 0.3;
+  z-index: 0;
+  pointer-events: none;
+}
 header {
   position: sticky;
   top: 0;
@@ -125,6 +137,8 @@ header::after {
 #search:focus { border-color: var(--accent); }
 #search::placeholder { color: var(--text-dim); }
 main {
+  position: relative;
+  z-index: 1;
   max-width: 1200px;
   margin: 0 auto;
   padding: 1rem;
