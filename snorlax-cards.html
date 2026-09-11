@@ -544,6 +544,11 @@ var CARDS=[
 ["Hungry Snorlax","---","Miscellaneous Promos 1998","miscellaneouspromos1998","034",8]
 ];
 
+var OVERRIDE_IMAGES = {
+  "TCG Classic|16/34":"https://pkmncards.com/wp-content/uploads/clv_en_016-snorlax.jpg",
+  "Miscellaneous Promos 1998|---":"https://archives.bulbagarden.net/media/upload/1/1e/HungrySnorlaxNintendo64promo.jpg"
+};
+
 (function() {
   var collected = {};
   var TOTAL = CARDS.length;
@@ -711,6 +716,8 @@ var CARDS=[
   }
 
   function setupImage(img, card, container) {
+    var cid = cardId(card);
+    var override = OVERRIDE_IMAGES[cid];
     var primary = ptcgUrl(card);
     var fallback = serebiiImg(card);
     function showPlaceholder() {
@@ -742,7 +749,23 @@ var CARDS=[
         tryFallback();
       }
     }
-    if (primary) {
+    if (override) {
+      img.addEventListener("error", function onFail() {
+        img.removeEventListener("error", onFail);
+        if (primary) {
+          img.addEventListener("error", tryFallback);
+          img.addEventListener("load", checkCardBack);
+          img.src = primary;
+        } else {
+          img.src = fallback;
+          img.addEventListener("error", function onFail2() {
+            img.removeEventListener("error", onFail2);
+            showPlaceholder();
+          });
+        }
+      });
+      img.src = override;
+    } else if (primary) {
       img.addEventListener("error", tryFallback);
       img.addEventListener("load", checkCardBack);
       img.src = primary;
