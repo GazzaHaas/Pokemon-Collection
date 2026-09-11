@@ -12,6 +12,10 @@ Mobile-first web app tracking Pokemon TCG cards. Deployed to GitHub Pages.
 - Need to adjust a tile? Crop the image or change one CSS value. Check it. Move on.
 - Two separate builds: Build 1 (komiya, kanda, gholdengo) and Build 2 (snorlax, munchlax)
 
+### Past mistakes — don't repeat these
+1. **Card images**: Spent ages programmatically guessing URLs and writing fallback chains when a simple web search for each card would have found every image in minutes.
+2. **Tile positioning**: Spent many iterations fighting CSS (height: 220% → 300% → 400%, top offsets, transforms) trying to zoom out a portrait image in a landscape tile, not realizing `object-fit: cover` scales by width regardless of element height. Fix was trivial: crop the source image to landscape and use one `object-position` value.
+
 ## File Structure
 - `index.html` — Landing page with 3 image-only tiles (names baked into artwork images)
 - `komiya.html` — Tomokazu Komiya collection (278 cards, all eras)
