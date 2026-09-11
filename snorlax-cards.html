@@ -716,10 +716,10 @@ var OVERRIDE_IMAGES = {
   }
 
   function setupImage(img, card, container) {
-    var cid = cardId(card);
-    var override = OVERRIDE_IMAGES[cid];
-    var primary = ptcgUrl(card);
+    var override = OVERRIDE_IMAGES[cardId(card)];
+    var primary = override || ptcgUrl(card);
     var fallback = serebiiImg(card);
+
     function showPlaceholder() {
       img.style.display = "none";
       var ph = document.createElement("div");
@@ -734,47 +734,38 @@ var OVERRIDE_IMAGES = {
       ph.appendChild(num);
       container.appendChild(ph);
     }
+
     function tryFallback() {
       img.removeEventListener("error", tryFallback);
-      img.removeEventListener("load", checkCardBack);
-      img.src = fallback;
-      img.addEventListener("error", function onFail() {
-        img.removeEventListener("error", onFail);
+      img.removeEventListener("load", onPrimaryLoad);
+      if (fallback) {
+        img.addEventListener("error", function onFail() {
+          img.removeEventListener("error", onFail);
+          showPlaceholder();
+        });
+        img.src = fallback;
+      } else {
         showPlaceholder();
-      });
-    }
-    function checkCardBack() {
-      img.removeEventListener("load", checkCardBack);
-      if (img.naturalWidth === 640 && img.naturalHeight === 892) {
-        tryFallback();
       }
     }
-    if (override) {
-      img.addEventListener("error", function onFail() {
-        img.removeEventListener("error", onFail);
-        if (primary) {
-          img.addEventListener("error", tryFallback);
-          img.addEventListener("load", checkCardBack);
-          img.src = primary;
-        } else {
-          img.src = fallback;
-          img.addEventListener("error", function onFail2() {
-            img.removeEventListener("error", onFail2);
-            showPlaceholder();
-          });
-        }
-      });
-      img.src = override;
-    } else if (primary) {
+
+    function onPrimaryLoad() {
+      img.removeEventListener("load", onPrimaryLoad);
+      if (img.naturalWidth === 640 && img.naturalHeight === 892) tryFallback();
+    }
+
+    if (primary) {
       img.addEventListener("error", tryFallback);
-      img.addEventListener("load", checkCardBack);
+      img.addEventListener("load", onPrimaryLoad);
       img.src = primary;
-    } else {
+    } else if (fallback) {
       img.addEventListener("error", function onFail() {
         img.removeEventListener("error", onFail);
         showPlaceholder();
       });
       img.src = fallback;
+    } else {
+      showPlaceholder();
     }
   }
 

@@ -894,16 +894,6 @@ var CARDS=[
     return !isFullyCollected(cid, card);
   }
 
-  function countOwnedVariants(cid, card) {
-    var val = collected[cid] || 0;
-    var bits = variantBitsForCard(card);
-    var count = 0;
-    for (var i = 0; i < bits.length; i++) {
-      if (val & bits[i]) count++;
-    }
-    return count;
-  }
-
   function loadState() {
     try {
       var d = localStorage.getItem("komiya-tcg");
