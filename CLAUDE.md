@@ -92,6 +92,66 @@ Mobile-first web app tracking Pokemon TCG cards. Deployed to GitHub Pages.
 - Snorlax: 63 cards
 - Munchlax: 14 cards
 
+## Snorlax/Munchlax Landing Page (snorlax.html)
+- Same structure as index.html: pokeball background, Pokemon logo header, image-only tiles
+- Header subtitle: "Snorlax & Munchlax" (not "Collection Tracker")
+- 2 tiles (150px height): snorlax-cards.html and munchlax.html
+- Tile images: `images/snorlax-tile.jpg` and `images/munchlax-tile.jpg` (placeholders — user will add later)
+- No back arrow (standalone entry point like index.html)
+- No footer
+
+## Global Styling Patterns (applied to ALL pages)
+
+### Header Holo Shimmer Line
+All pages use an animated holographic gradient line at the bottom of the header (replaces old `border-bottom: 2px solid var(--accent)`):
+```css
+header { border-bottom: none; }
+header::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 4px;
+  background: linear-gradient(90deg,
+    #ff6ec7 0%, #a855f7 12%, #6366f1 22%, #3b82f6 32%,
+    #22d3ee 42%, #34d399 52%, #facc15 62%, #fb923c 72%,
+    #f43f5e 82%, #c084fc 92%, #ff6ec7 100%);
+  background-size: 200% 100%;
+  animation: holo-shift 3s linear infinite;
+}
+@keyframes holo-shift {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+```
+
+### Pokemon Logo Header (landing pages only: index.html, snorlax.html)
+```html
+<h1><img src="images/pokemon-logo.svg" alt="Pokemon"><span>Collection Tracker</span></h1>
+```
+- Logo: `images/pokemon-logo.svg` (transparent SVG from Wikimedia Commons)
+- Subtitle styled: `font-size: 0.85rem; font-weight: 300; color: rgba(255,255,255,0.7); letter-spacing: 2px; text-transform: uppercase`
+
+### Zoom Disabled (all pages)
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+```
+```css
+body { touch-action: pan-y; }
+```
+
+### Collection Page Header Design (komiya, kanda, gholdengo, snorlax-cards, munchlax)
+- Back link: dim color (`var(--text-dim)`), transitions to accent on hover
+- Title: `font-size: 1.35rem`, card count text: `font-size: 0.75rem`
+- Progress bar: `height: 4px`, `background: rgba(255,255,255,0.08)`, `border-radius: 2px`
+- Progress count: `font-size: 0.75rem`
+- Search: `border-radius: 20px` (pill shape), `background: rgba(255,255,255,0.05)`, `border: 1px solid rgba(255,255,255,0.08)`
+- Filter buttons: pill-shaped (`border-radius: 20px`), `padding: 0.3rem 0.7rem`, `font-size: 0.75rem`, transparent background
+- Era dropdown: pill-shaped, `margin-left: auto` (pushed to right end of filter row)
+- All filters in one `.filter-row` flex container (buttons + era dropdown inline)
+
+### No Footers
+All footers have been removed across every page.
+
 ## Code Cleanup Applied
 - Removed dead `countOwnedVariants()` from komiya and kanda
 - Removed empty `HOLO_RARES` from kanda, gholdengo, munchlax

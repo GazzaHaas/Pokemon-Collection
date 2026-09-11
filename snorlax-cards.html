@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Snorlax - Pokemon Collection Tracker</title>
 <style>
 :root {
@@ -23,6 +23,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   min-height: 100vh;
+  touch-action: pan-y;
 }
 header {
   position: sticky;
@@ -31,8 +32,26 @@ header {
   background: rgba(22, 22, 37, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 2px solid var(--accent);
+  border-bottom: none;
   padding: 0.75rem 1rem;
+}
+header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg,
+    #ff6ec7 0%, #a855f7 12%, #6366f1 22%, #3b82f6 32%,
+    #22d3ee 42%, #34d399 52%, #facc15 62%, #fb923c 72%,
+    #f43f5e 82%, #c084fc 92%, #ff6ec7 100%);
+  background-size: 200% 100%;
+  animation: holo-shift 3s linear infinite;
+}
+@keyframes holo-shift {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
 }
 .header-inner {
   max-width: 1200px;
@@ -42,62 +61,64 @@ header {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
+.header-top .back-link {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 1.1rem;
+  line-height: 1;
+  margin-right: 0.1rem;
+  transition: color 0.2s;
+}
+.header-top .back-link:hover { color: var(--text); }
 .header-top h1 {
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   color: var(--accent);
   font-weight: 700;
   white-space: nowrap;
+  letter-spacing: -0.01em;
 }
 .header-top span {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: var(--text-dim);
+  font-weight: 400;
 }
-.back-link {
-  color: var(--accent);
-  text-decoration: none;
-  font-size: 1.1rem;
-  margin-right: 0.4rem;
-}
-.back-link:hover { opacity: 0.8; }
 .progress-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.6rem;
-  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 #progress-count {
-  font-weight: 700;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 0.75rem;
   color: var(--green);
   white-space: nowrap;
 }
 .progress-bar {
   flex: 1;
-  min-width: 100px;
-  height: 8px;
-  background: #2a2a3e;
-  border-radius: 4px;
+  min-width: 80px;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
   overflow: hidden;
 }
 #progress-fill {
   height: 100%;
   width: 0%;
   background: linear-gradient(90deg, var(--blue), var(--green));
-  border-radius: 4px;
+  border-radius: 2px;
   transition: width 0.35s ease;
 }
 #search {
   width: 100%;
-  padding: 0.5rem 0.75rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
   color: var(--text);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   outline: none;
   transition: border-color 0.2s;
 }
@@ -357,28 +378,33 @@ main {
   background: var(--green);
   opacity: 1;
 }
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
 .filter-bar {
   display: flex;
-  gap: 0.4rem;
-  margin-top: 0.6rem;
+  gap: 0.3rem;
 }
 .filter-btn {
-  flex: 1;
-  padding: 0.4rem 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
+  padding: 0.3rem 0.7rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  background: transparent;
   color: var(--text-dim);
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   text-align: center;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  white-space: nowrap;
 }
 .filter-btn:hover {
-  border-color: var(--accent);
+  border-color: rgba(255,255,255,0.25);
   color: var(--text);
 }
 .filter-btn.active {
@@ -396,35 +422,24 @@ main {
   color: #fff;
 }
 #era-filter {
-  width: 100%;
-  padding: 0.45rem 0.75rem;
-  margin-top: 0.5rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  margin-left: auto;
+  padding: 0.3rem 1.8rem 0.3rem 0.6rem;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
   color: var(--text);
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   outline: none;
   transition: border-color 0.2s;
   -webkit-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23777' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23777' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 0.75rem center;
+  background-position: right 0.6rem center;
   cursor: pointer;
 }
 #era-filter:focus { border-color: var(--accent); }
 .filt-hidden { display: none !important; }
-footer {
-  text-align: center;
-  padding: 2rem 1rem;
-  color: var(--text-dim);
-  font-size: 0.75rem;
-  border-top: 1px solid var(--border);
-  margin-top: 2rem;
-}
-footer a { color: var(--blue); text-decoration: none; }
-footer a:hover { text-decoration: underline; }
 noscript {
   display: block;
   text-align: center;
@@ -447,22 +462,21 @@ noscript {
       <div class="progress-bar"><div id="progress-fill"></div></div>
     </div>
     <input type="text" id="search" placeholder="Search by Pokemon name or set name...">
-    <div class="filter-bar">
-      <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="collected">Collected</button>
-      <button class="filter-btn" data-filter="needed">Needed</button>
+    <div class="filter-row">
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="collected">Collected</button>
+        <button class="filter-btn" data-filter="needed">Needed</button>
+      </div>
+      <select id="era-filter">
+        <option value="all">All Eras</option>
+      </select>
     </div>
-    <select id="era-filter">
-      <option value="all">All Eras</option>
-    </select>
   </div>
 </header>
 <main id="container">
   <noscript>Please enable JavaScript to use this collection tracker.</noscript>
 </main>
-<footer>
-  <p>63 Snorlax cards &middot; Data from <a href="https://www.serebii.net/" target="_blank" rel="noopener">Serebii.net</a> &amp; <a href="https://pokemontcg.io/" target="_blank" rel="noopener">pokemontcg.io</a></p>
-</footer>
 <script>
 var SET_IDS={"151":"sv3pt5","Paldean Fates":"sv4pt5","Twilight Masquerade":"sv6","Surging Sparks":"sv8","Prismatic Evolutions":"sv8pt5","Journey Together":"sv9","SV Promos":"svp","Perfect Order":"me3","Sword Shield":"swsh1","Rebel Clash":"swsh2","Vivid Voltage":"swsh4","Chilling Reign":"swsh6","Fusion Strike":"swsh8","Pokemon GO":"pgo","Lost Origin":"swsh11","Crown Zenith":"swsh12pt5","SWSH Promos":"swshp","Hidden Fates":"sm115","Unbroken Bonds":"sm10","Team Up":"sm9","SM Promos":"smp","Fates Collide":"xy10","Generations":"g1","XY Promos":"xyp","BREAKThrough":"xy8","Flashfire":"xy2","Kalos Starter Set":"xy0","Plasma Storm":"bw8","Boundaries Crossed":"bw7","Call of Legends":"col1","Rising Rivals":"pl2","Diamond & Pearl":"dp1","Majestic Dawn":"dp5","EX Dragon Frontiers":"ex15","EX Team Rocket Returns":"ex7","EX FireRed & LeafGreen":"ex6","Skyridge":"ecard3","Legendary Collection":"base6","Gym Heroes":"gym1","Base Set 2":"base4","Wizards Promos":"basep","Jungle":"base2"};
 
