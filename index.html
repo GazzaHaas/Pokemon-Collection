@@ -63,9 +63,21 @@ header::after {
   100% { background-position: 200% 0; }
 }
 header h1 {
-  font-size: 1.15rem;
-  color: var(--accent);
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+header h1 img {
+  height: 28px;
+  display: block;
+}
+header h1 span {
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 main {
   position: relative;
@@ -123,7 +135,7 @@ footer a { color: var(--blue); text-decoration: none; }
 </head>
 <body>
 <header>
-  <h1>Pokemon Collection Tracker</h1>
+  <h1><img src="images/pokemon-logo.png" alt="Pokemon"><span>Collection Tracker</span></h1>
 </header>
 <main>
   <a class="tile" href="komiya.html" id="tile-komiya">
