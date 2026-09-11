@@ -31,7 +31,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('images/munchlax-bg.jpg') center center / cover no-repeat;
+  background: url('images/munchlax-bg.jpg') top center / 100% auto no-repeat;
   opacity: 0.3;
   z-index: 0;
   pointer-events: none;
@@ -1044,7 +1044,7 @@ var CARDS=[
   }
 })();
 document.querySelector('.back-link').addEventListener('click', function(e) { e.preventDefault(); window.location.href = this.href; });
-(function(){var h=document.querySelector('header'),m=document.querySelector('main');function fix(){m.style.paddingTop=h.offsetHeight+'px';}fix();window.addEventListener('resize',fix);})();
+(function(){var h=document.querySelector('header'),m=document.querySelector('main'),b=document.querySelector('.bg-img');function fix(){var hh=h.offsetHeight+'px';m.style.paddingTop=hh;b.style.top=hh;}fix();window.addEventListener('resize',fix);})();
 </script>
 </body>
 </html>
