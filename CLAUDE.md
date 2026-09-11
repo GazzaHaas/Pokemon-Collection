@@ -4,8 +4,7 @@
 Mobile-first web app tracking Pokemon TCG cards across three collections. Deployed to GitHub Pages.
 
 **Live site:** https://gazzahaas.github.io/Pokemon-Collection/
-**Deploy branch:** `claude/markdown-file-build-rdxkry`
-**Dev branch:** `claude/continue-previous-session-frew3s`
+**Branch:** `claude/markdown-file-build-rdxkry` (GitHub Pages deploys from here)
 
 ## File Structure
 - `index.html` — Landing page with 3 image-only tiles (no text overlay — names baked into artwork images)
