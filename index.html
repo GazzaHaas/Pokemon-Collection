@@ -75,8 +75,8 @@ main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 10px;
+  gap: 12px;
+  padding: 12px;
   min-height: 0;
 }
 .tile {
@@ -124,7 +124,7 @@ main {
 document.querySelectorAll('.tile').forEach(function(t) {
   t.addEventListener('click', function(e) { e.preventDefault(); window.location.href = this.href; });
 });
-(function(){var h=document.querySelector('header'),m=document.querySelector('main');function fix(){m.style.paddingTop=h.offsetHeight+'px';}fix();window.addEventListener('resize',fix);})();
+(function(){var h=document.querySelector('header'),m=document.querySelector('main');function fix(){m.style.paddingTop=(h.offsetHeight+12)+'px';}fix();window.addEventListener('resize',fix);})();
 </script>
 </body>
 </html>
