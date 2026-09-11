@@ -38,8 +38,10 @@ body::before {
   pointer-events: none;
 }
 header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  width: 100%;
   z-index: 100;
   background: rgba(22, 22, 37, 0.95);
   backdrop-filter: blur(12px);
@@ -1151,6 +1153,7 @@ var OVERRIDE_IMAGES = {
   }
 })();
 document.querySelector('.back-link').addEventListener('click', function(e) { e.preventDefault(); window.location.href = this.href; });
+document.querySelector('main').style.paddingTop = document.querySelector('header').offsetHeight + 'px';
 </script>
 </body>
 </html>
