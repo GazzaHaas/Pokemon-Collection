@@ -454,7 +454,7 @@ noscript {
   <noscript>Please enable JavaScript to use this collection tracker.</noscript>
 </main>
 <footer>
-  <p>278 cards illustrated by Tomokazu Komiya &middot; Data from <a href="https://www.serebii.net/card/dex/artist/tomokazukomiya.shtml" target="_blank" rel="noopener">Serebii.net</a></p>
+  <p>278 cards illustrated by Tomokazu Komiya &middot; Data from <a href="https://www.pokemon.com/us/pokemon-tcg/pokemon-cards" target="_blank" rel="noopener">Pokemon.com</a> &amp; <a href="https://pokemontcg.io/" target="_blank" rel="noopener">pokemontcg.io</a></p>
 </footer>
 <script>
 var SET_IDS={"Journey Together":"sv9","Destined Rivals":"sv10","Black Bolt":"zsv10pt5","Phantasmal Flames":"me2","Mega Evolution":"me1","Surging Sparks":"sv8","Stellar Crown":"sv7","Twilight Masquerade":"sv6","Temporal Forces":"sv5","Paradox Rift":"sv4","151":"sv3pt5","Obsidian Flames":"sv3","Paldea Evolved":"sv2","Scarlet Violet":"sv1","SWSH Promos":"swshp","Crown Zenith":"swsh12pt5","Silver Tempest":"swsh12","Lost Origin":"swsh11","Pokemon GO":"pgo","Astral Radiance":"swsh10","Brilliant Stars":"swsh9","Fusion Strike":"swsh8","Evolving Skies":"swsh7","Chilling Reign":"swsh6","Battle Styles":"swsh5","Vivid Voltage":"swsh4","Darkness Ablaze":"swsh3","Rebel Clash":"swsh2","Sword Shield":"swsh1","SM Promos":"smp","Cosmic Eclipse":"sm12","Unified Minds":"sm11","Unbroken Bonds":"sm10","Team Up":"sm9","Lost Thunder":"sm8","Forbidden Light":"sm6","Ultra Prism":"sm5","Shining Legends":"sm35","Guardians Rising":"sm2","Sun Moon":"sm1","XY Promos":"xyp","Steam Siege":"xy11","Fates Collide":"xy10","Generations":"g1","BREAKPoint":"xy9","BREAKThrough":"xy8","Ancient Origins":"xy7","Roaring Skies":"xy6","Primal Clash":"xy5","Phantom Forces":"xy4","Furious Fists":"xy3","Flashfire":"xy2","X Y":"xy1","BW Promos":"bwp","Legendary Treasures":"bw11","Plasma Storm":"bw8","Boundaries Crossed":"bw7","Dragons Exalted":"bw6","Dark Explorers":"bw5","Noble Victories":"bw3","Triumphant":"hgss4","Undaunted":"hgss3","Unleashed":"hgss2","HeartGold SoulSilver":"hgss1","Arceus":"pl4","Supreme Victors":"pl3","Rising Rivals":"pl2","Platinum":"pl1","Stormfront":"dp7","Majestic Dawn":"dp5","EX Power Keepers":"ex16","EX Dragon Frontiers":"ex15","EX Crystal Guardians":"ex14","EX Legend Maker":"ex12","EX Delta Species":"ex11","POP Series 2":"pop2","EX Unseen Forces":"ex10","EX Deoxys":"ex8","EX Team Rocket Returns":"ex7","EX FireRed & LeafGreen":"ex6","EX Hidden Legends":"ex5","EX Dragon":"ex3","EX Sandstorm":"ex2","Skyridge":"ecard3","Aquapolis":"ecard2","Expedition":"ecard1","Wizards Promos":"basep","Neo Destiny":"neo4","Neo Revelation":"neo3","Neo Discovery":"neo2","Neo Genesis":"neo1"};
@@ -784,6 +784,10 @@ var CARDS=[
     "Chilling Reign|118/198":1
   };
 
+  var NO_PCOM_CDN = {"neo1":1,"neo2":1,"neo3":1,"neo4":1,"ecard1":1,"ecard2":1,"ecard3":1,"basep":1,"swshp":1,"smp":1,"xyp":1,"bwp":1};
+
+  var BULBA_SETS = {"VS":"VS","Vending Machine Set 1":"Vending_S1","Vending Machine Set 2":"Vending_S2","Vending Machine Set 3":"Vending_S3","SM Promo":"SM-P_Promo","XY Promo":"XY-P_Promo","P Promos":"P_Promotional","Wizards Promos":"Wizards_Promo","Play Promotional":null,"Miscellaneous Promos 1998":null,"Storm Emeralda":null,"30th Celebration":null};
+
   function getVariants(card) {
     var setName = card[2];
     var num = card[1];
@@ -899,13 +903,62 @@ var CARDS=[
     return "https://images.pokemontcg.io/" + sid + "/" + getLocalId(c[1]) + "_hires.png";
   }
 
-  function serebiiImg(c) {
-    var num = c[4].replace(/^[a-zA-Z]+/, '').replace(/^0+(?=\d)/, '');
-    return "https://www.serebii.net/card/" + c[3] + "/" + num + ".jpg";
+  function pcomCode(ptcgId) {
+    var u = ptcgId.toUpperCase();
+    if (/^SV\d$/.test(u)) return "SV0" + u.charAt(2);
+    return u;
   }
 
-  function serebiiPage(c) {
-    return "https://www.serebii.net/card/" + c[3] + "/" + c[4] + ".shtml";
+  function pokemonComImg(c) {
+    var sid = SET_IDS[c[2]];
+    if (!sid || NO_PCOM_CDN[sid]) return null;
+    var code = pcomCode(sid);
+    var num = parseInt(getLocalId(c[1]), 10);
+    if (isNaN(num)) return null;
+    return "https://assets.pokemon.com/static-assets/content-assets/cms2/img/cards/web/" + code + "/" + code + "_EN_" + num + ".png";
+  }
+
+  function getSeries(ptcgId) {
+    if (/^swsh/.test(ptcgId)) return "ss-series";
+    if (/^sv/.test(ptcgId)) return "sv-series";
+    if (/^sm/.test(ptcgId) || ptcgId === "smp") return "sm-series";
+    if (/^xy/.test(ptcgId) || ptcgId === "xyp" || ptcgId === "g1") return "xy-series";
+    if (/^bw/.test(ptcgId) || ptcgId === "bwp") return "bw-series";
+    if (/^ex/.test(ptcgId)) return "ex-series";
+    if (/^hgss/.test(ptcgId)) return "hgss-series";
+    if (/^dp/.test(ptcgId) || /^pl/.test(ptcgId)) return "dp-series";
+    if (/^pop/.test(ptcgId)) return "pop-series";
+    if (/^neo/.test(ptcgId)) return "neo-series";
+    if (/^ecard/.test(ptcgId)) return "e-card-series";
+    if (/^base/.test(ptcgId)) return "base-series";
+    if (ptcgId === "pgo") return "sm-series";
+    if (/^me/.test(ptcgId) || /^zsv/.test(ptcgId)) return "sv-series";
+    return null;
+  }
+
+  function cardInfoUrl(c) {
+    var sid = SET_IDS[c[2]];
+    if (sid) {
+      var series = getSeries(sid);
+      if (series) {
+        var localId = getLocalId(c[1]);
+        var num = parseInt(localId, 10);
+        if (isNaN(num) && /p$/.test(sid)) {
+          var m = localId.match(/(\d+)$/);
+          if (m) num = parseInt(m[1], 10);
+        }
+        if (!isNaN(num)) return "https://www.pokemon.com/us/pokemon-tcg/pokemon-cards/" + series + "/" + sid + "/" + num;
+      }
+    }
+    var bulbaSet = BULBA_SETS[c[2]];
+    if (bulbaSet) {
+      var name = c[0].replace(/ /g, "_");
+      if (c[2] === "VS") return "https://bulbapedia.bulbagarden.net/wiki/" + name + "_(VS_" + c[1].split("/")[0] + ")";
+      if (c[2].indexOf("Vending") === 0) return "https://bulbapedia.bulbagarden.net/wiki/" + name + "_(" + bulbaSet + ")";
+      var promoNum = c[1].replace(/[^0-9]/g, "");
+      if (promoNum) return "https://bulbapedia.bulbagarden.net/wiki/" + name + "_(" + bulbaSet + "_" + promoNum + ")";
+    }
+    return "https://bulbapedia.bulbagarden.net/w/index.php?search=" + encodeURIComponent(c[0] + " " + c[2] + " Pokemon card");
   }
 
   function updateTotalProgress() {
@@ -935,8 +988,10 @@ var CARDS=[
   }
 
   function setupImage(img, card, container) {
-    var primary = ptcgUrl(card);
-    var fallback = serebiiImg(card);
+    var pcom = pokemonComImg(card);
+    var ptcg = ptcgUrl(card);
+    var primary = pcom || ptcg;
+    var fallback = pcom ? ptcg : null;
 
     function showPlaceholder() {
       img.style.display = "none";
@@ -953,33 +1008,39 @@ var CARDS=[
       container.appendChild(ph);
     }
 
-    function tryFallback() {
-      img.removeEventListener("error", tryFallback);
-      img.removeEventListener("load", checkCardBack);
-      img.src = fallback;
-      img.addEventListener("error", function onFail() {
-        img.removeEventListener("error", onFail);
-        showPlaceholder();
-      });
+    function isCardBack() {
+      return img.naturalWidth === 640 && img.naturalHeight === 892;
     }
 
-    function checkCardBack() {
-      img.removeEventListener("load", checkCardBack);
-      if (img.naturalWidth === 640 && img.naturalHeight === 892) {
-        tryFallback();
+    function tryFallback() {
+      img.removeEventListener("error", tryFallback);
+      img.removeEventListener("load", onPrimaryLoad);
+      if (fallback) {
+        img.addEventListener("error", function onFail() {
+          img.removeEventListener("error", onFail);
+          showPlaceholder();
+        });
+        img.addEventListener("load", function onFallbackLoad() {
+          img.removeEventListener("load", onFallbackLoad);
+          if (isCardBack()) showPlaceholder();
+        });
+        img.src = fallback;
+      } else {
+        showPlaceholder();
       }
+    }
+
+    function onPrimaryLoad() {
+      img.removeEventListener("load", onPrimaryLoad);
+      if (isCardBack()) tryFallback();
     }
 
     if (primary) {
       img.addEventListener("error", tryFallback);
-      img.addEventListener("load", checkCardBack);
+      img.addEventListener("load", onPrimaryLoad);
       img.src = primary;
     } else {
-      img.addEventListener("error", function onFail() {
-        img.removeEventListener("error", onFail);
-        showPlaceholder();
-      });
-      img.src = fallback;
+      showPlaceholder();
     }
   }
 
@@ -1100,7 +1161,7 @@ var CARDS=[
 
     var link = document.createElement("a");
     link.className = "card-link";
-    link.href = serebiiPage(card);
+    link.href = cardInfoUrl(card);
     link.target = "_blank";
     link.rel = "noopener";
 
