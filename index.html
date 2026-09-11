@@ -25,9 +25,24 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('images/pokeball-bg.jpg') center center / cover no-repeat;
+  opacity: 0.15;
+  z-index: 0;
+  pointer-events: none;
 }
 header {
-  background: rgba(22, 22, 37, 0.95);
+  position: relative;
+  z-index: 1;
+  background: rgba(22, 22, 37, 0.9);
   border-bottom: 2px solid var(--accent);
   padding: 1.25rem 1rem;
   text-align: center;
@@ -43,6 +58,8 @@ header p {
   margin-top: 0.25rem;
 }
 main {
+  position: relative;
+  z-index: 1;
   flex: 1;
   max-width: 600px;
   width: 100%;
@@ -54,7 +71,7 @@ main {
 }
 .tile {
   display: block;
-  background: var(--card-bg);
+  position: relative;
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 1.25rem 1.1rem;
@@ -62,11 +79,51 @@ main {
   color: var(--text);
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
   box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+  overflow: hidden;
+  min-height: 140px;
+}
+.tile::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+}
+.tile::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(13,13,13,0.85) 0%, rgba(26,26,46,0.7) 50%, rgba(13,13,13,0.85) 100%);
+  z-index: 1;
+}
+.tile > * {
+  position: relative;
+  z-index: 2;
+}
+#tile-komiya::before {
+  background-image: url('images/komiya-tile.jpg');
+}
+#tile-kanda::before {
+  background-image: url('images/kanda-tile.jpg');
+}
+#tile-gholdengo::before {
+  background-image: url('images/gholdengo-tile.jpg');
+  background-position: top center;
 }
 .tile:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0,0,0,0.6);
   border-color: var(--accent);
+}
+.tile:hover::after {
+  background: linear-gradient(135deg, rgba(13,13,13,0.75) 0%, rgba(26,26,46,0.55) 50%, rgba(13,13,13,0.75) 100%);
 }
 .tile:active {
   transform: translateY(-1px);
@@ -78,19 +135,22 @@ main {
   margin-bottom: 0.6rem;
 }
 .tile-name {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 800;
   color: var(--accent);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,1);
 }
 .tile-count {
   font-size: 0.85rem;
-  color: var(--text-dim);
-  font-weight: 600;
+  color: #ccc;
+  font-weight: 700;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
 }
 .tile-desc {
   font-size: 0.82rem;
-  color: var(--text-dim);
+  color: #bbb;
   margin-bottom: 0.75rem;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
 }
 .tile-progress-row {
   display: flex;
@@ -103,11 +163,12 @@ main {
   color: var(--green);
   white-space: nowrap;
   min-width: 90px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
 }
 .tile-progress-bar {
   flex: 1;
   height: 8px;
-  background: #2a2a3e;
+  background: rgba(42,42,62,0.7);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -119,11 +180,14 @@ main {
   transition: width 0.5s ease;
 }
 footer {
+  position: relative;
+  z-index: 1;
   text-align: center;
   padding: 1.5rem 1rem;
   color: var(--text-dim);
   font-size: 0.75rem;
   border-top: 1px solid var(--border);
+  background: rgba(13,13,13,0.8);
 }
 footer a { color: var(--blue); text-decoration: none; }
 footer a:hover { text-decoration: underline; }
@@ -170,7 +234,7 @@ footer a:hover { text-decoration: underline; }
   </a>
 </main>
 <footer>
-  <p>Pokemon Collection Tracker &middot; Data from <a href="https://www.serebii.net/" target="_blank" rel="noopener">Serebii.net</a> &amp; <a href="https://pokemontcg.io/" target="_blank" rel="noopener">pokemontcg.io</a></p>
+  <p>Pokemon Collection Tracker &middot; Data from <a href="https://pokemon.com/" target="_blank" rel="noopener">pokemon.com</a> &amp; <a href="https://pokemontcg.io/" target="_blank" rel="noopener">pokemontcg.io</a></p>
 </footer>
 <script>
 (function() {
