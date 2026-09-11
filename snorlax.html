@@ -129,5 +129,10 @@ main {
     <img src="images/munchlax-tile.jpg" alt="Munchlax">
   </a>
 </main>
+<script>
+document.querySelectorAll('.tile').forEach(function(t) {
+  t.addEventListener('click', function(e) { e.preventDefault(); window.location.href = this.href; });
+});
+</script>
 </body>
 </html>
