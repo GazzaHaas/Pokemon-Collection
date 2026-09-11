@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snorlax & Munchlax - Pokemon Collection Tracker</title>
+<style>
+:root {
+  --bg: #0d0d0d;
+  --surface: #161625;
+  --card-bg: #1a1a2e;
+  --accent: #ffcb05;
+  --green: #3ecf8e;
+  --blue: #3d7dca;
+  --text: #e8e8e8;
+  --text-dim: #777;
+  --border: #2a2a3e;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(22, 22, 37, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 2px solid var(--accent);
+  padding: 0.75rem 1rem;
+}
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.header-top {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+.header-top h1 {
+  font-size: 1.15rem;
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.header-top span {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+  flex-wrap: wrap;
+}
+#progress-count {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--green);
+  white-space: nowrap;
+}
+.progress-bar {
+  flex: 1;
+  min-width: 100px;
+  height: 8px;
+  background: #2a2a3e;
+  border-radius: 4px;
+  overflow: hidden;
+}
+#progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--blue), var(--green));
+  border-radius: 4px;
+  transition: width 0.35s ease;
+}
+#search {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+#search:focus { border-color: var(--accent); }
+#search::placeholder { color: var(--text-dim); }
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.era-section { margin-bottom: 1.5rem; }
+.era-header {
+  font-size: 1rem;
+  color: var(--accent);
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+.set-section { margin-bottom: 1.25rem; }
+.set-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  margin-bottom: 0.6rem;
+}
+.set-header h3 {
+  font-size: 0.95rem;
+  color: var(--text);
+  font-weight: 500;
+}
+.set-progress {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  background: var(--surface);
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color 0.2s, background 0.2s;
+}
+.set-complete .set-progress {
+  color: var(--green);
+  background: rgba(62, 207, 142, 0.12);
+}
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+}
+@media (min-width: 580px) {
+  .card-grid { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+}
+@media (min-width: 900px) {
+  .card-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+}
+.card {
+  position: relative;
+  background: var(--card-bg);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+}
+.card-link {
+  display: block;
+  position: relative;
+  aspect-ratio: 245 / 342;
+  background: #111;
+  overflow: hidden;
+  text-decoration: none;
+}
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #111;
+}
+.card-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+  text-align: center;
+  padding: 0.75rem;
+}
+.placeholder-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.2rem;
+  word-break: break-word;
+}
+.placeholder-num {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.collected-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: var(--green);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+}
+.card.collected .collected-overlay { opacity: 1; }
+.card.partial .card-img { filter: brightness(0.7); }
+.card.collected .card-img { filter: brightness(0.45); }
+.card-checkbox {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 30px;
+  height: 30px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 2px solid rgba(255,255,255,0.25);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.card-checkbox:hover {
+  border-color: var(--green);
+  background: rgba(0, 0, 0, 0.75);
+}
+.card.collected .card-checkbox {
+  background: var(--green);
+  border-color: var(--green);
+}
+.card.partial .card-checkbox {
+  background: rgba(62, 207, 142, 0.35);
+  border-color: var(--green);
+}
+.checkmark {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+}
+.variant-popup {
+  position: absolute;
+  top: 40px;
+  right: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  z-index: 20;
+  min-width: 150px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+}
+.variant-popup-title {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border);
+}
+.variant-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.variant-row:hover {
+  background: rgba(255,255,255,0.05);
+}
+.variant-cb {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--text-dim);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.variant-cb.checked {
+  background: var(--green);
+  border-color: var(--green);
+}
+.variant-cb-mark {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+.variant-label {
+  font-size: 0.82rem;
+  color: var(--text);
+}
+.card-info {
+  padding: 0.4rem 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+.card-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.card-num {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.variant-dots {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  margin-left: 4px;
+}
+.variant-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  opacity: 0.3;
+}
+.variant-dot.owned {
+  background: var(--green);
+  opacity: 1;
+}
+.filter-bar {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+.filter-btn {
+  flex: 1;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.filter-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.filter-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+}
+.filter-btn.active[data-filter="collected"] {
+  background: var(--green);
+  border-color: var(--green);
+}
+.filter-btn.active[data-filter="needed"] {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+.pokemon-bar {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+.pokemon-btn {
+  flex: 1;
+  padding: 0.35rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.pokemon-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.pokemon-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+}
+#era-filter {
+  width: 100%;
+  padding: 0.45rem 0.75rem;
+  margin-top: 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23777' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  cursor: pointer;
+}
+#era-filter:focus { border-color: var(--accent); }
+.filt-hidden { display: none !important; }
+footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+}
+footer a { color: var(--blue); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+noscript {
+  display: block;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text);
+  font-size: 1.1rem;
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="header-top">
+      <h1>Snorlax &amp; Munchlax</h1>
+      <span>74 cards</span>
+    </div>
+    <div class="progress-row">
+      <span id="progress-count">0 / 74 collected (0%)</span>
+      <div class="progress-bar"><div id="progress-fill"></div></div>
+    </div>
+    <input type="text" id="search" placeholder="Search by Pokemon name or set name...">
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="collected">Collected</button>
+      <button class="filter-btn" data-filter="needed">Needed</button>
+    </div>
+    <div class="pokemon-bar">
+      <button class="pokemon-btn active" data-pokemon="all">All</button>
+      <button class="pokemon-btn" data-pokemon="snorlax">Snorlax</button>
+      <button class="pokemon-btn" data-pokemon="munchlax">Munchlax</button>
+    </div>
+    <select id="era-filter">
+      <option value="all">All Eras</option>
+    </select>
+  </div>
+</header>
+<main id="container">
+  <noscript>Please enable JavaScript to use this collection tracker.</noscript>
+</main>
+<footer>
+  <p>74 Snorlax &amp; Munchlax cards &middot; Data from <a href="https://www.serebii.net/" target="_blank" rel="noopener">Serebii.net</a></p>
+</footer>
+<script>
+var SET_IDS={"151":"sv3pt5","Paldean Fates":"sv4pt5","Twilight Masquerade":"sv6","Surging Sparks":"sv8","Prismatic Evolutions":"sv8pt5","Journey Together":"sv9","SV Promos":"svp","Perfect Order":"me3","Sword Shield":"swsh1","Rebel Clash":"swsh2","Vivid Voltage":"swsh4","Chilling Reign":"swsh6","Fusion Strike":"swsh8","Pokemon GO":"pgo","Lost Origin":"swsh11","Crown Zenith":"swsh12pt5","SWSH Promos":"swshp","Hidden Fates":"sm115","Unbroken Bonds":"sm10","Team Up":"sm9","SM Promos":"smp","Unified Minds":"sm11","Fates Collide":"xy10","Generations":"g1","XY Promos":"xyp","BREAKThrough":"xy8","Flashfire":"xy2","Kalos Starter Set":"xy0","Plasma Storm":"bw8","Boundaries Crossed":"bw7","Call of Legends":"col1","Rising Rivals":"pl2","Diamond & Pearl":"dp1","Majestic Dawn":"dp5","EX Dragon Frontiers":"ex15","EX Team Rocket Returns":"ex7","EX FireRed & LeafGreen":"ex6","Skyridge":"ecard3","Legendary Collection":"base6","Gym Heroes":"gym1","Base Set 2":"base4","Wizards Promos":"basep","Jungle":"base2"};
+
+var ERA_NAMES=[
+"Scarlet & Violet (2022–2026)",
+"Sword & Shield (2020–2023)",
+"Sun & Moon (2017–2019)",
+"XY (2014–2016)",
+"Black & White (2011–2013)",
+"HeartGold SoulSilver / Platinum / DP (2007–2011)",
+"EX (2003–2007)",
+"e-Card / Neo / Classic (2000–2003)",
+"Japanese / Promo / Miscellaneous"
+];
+
+var CARDS=[
+["Snorlax","119/128","30th Celebration","30thcelebration","119",0,"snorlax"],
+["Snorlax","63/88","Perfect Order","perfectorder","063",0,"snorlax"],
+["Hop's Snorlax","117/159","Journey Together","journeytogether","117",0,"snorlax"],
+["Snorlax ex","76/131","Prismatic Evolutions","prismaticevolutions","076",0,"snorlax"],
+["Snorlax","144/191","Surging Sparks","surgingsparks","144",0,"snorlax"],
+["Snorlax","136/167","Twilight Masquerade","twilightmasquerade","136",0,"snorlax"],
+["Snorlax","202/091","Paldean Fates","paldeanfates","202",0,"snorlax"],
+["Snorlax","143/165","151","151","143",0,"snorlax"],
+["Hop's Snorlax","SVP184","SV Promos","svpromos","184",0,"snorlax"],
+["Snorlax","SVP122","SV Promos","svpromos","122",0,"snorlax"],
+["Snorlax","SVP051","SV Promos","svpromos","051",0,"snorlax"],
+["Snorlax","109/159","Crown Zenith","crownzenith","109",1,"snorlax"],
+["Snorlax","143/196","Lost Origin","lostorigin","143",1,"snorlax"],
+["Snorlax","TG10/TG30","Lost Origin","lostorigin","H10",1,"snorlax"],
+["Snorlax","55/78","Pokemon GO","pokemongo","055",1,"snorlax"],
+["Snorlax","206/264","Fusion Strike","fusionstrike","206",1,"snorlax"],
+["Snorlax","224/198","Chilling Reign","chillingreign","224",1,"snorlax"],
+["Snorlax","131/180","Vivid Voltage","vividvoltage","131",1,"snorlax"],
+["Snorlax","141/192","Rebel Clash","rebelclash","141",1,"snorlax"],
+["Snorlax","140/202","Sword Shield","swordshield","140",1,"snorlax"],
+["Snorlax V","141/202","Sword Shield","swordshield","141",1,"snorlax"],
+["Snorlax VMAX","142/202","Sword Shield","swordshield","142",1,"snorlax"],
+["Snorlax V","197/202","Sword Shield","swordshield","197",1,"snorlax"],
+["Snorlax VMAX","206/202","Sword Shield","swordshield","206",1,"snorlax"],
+["Snorlax","SWSH119","SWSH Promos","swshpromos","119",1,"snorlax"],
+["Snorlax","SWSH068","SWSH Promos","swshpromos","068",1,"snorlax"],
+["Snorlax","SWSH032","SWSH Promos","swshpromos","032",1,"snorlax"],
+["Snorlax","50/68","Hidden Fates","hiddenfates","050",2,"snorlax"],
+["Snorlax","158/214","Unbroken Bonds","unbrokenbonds","158",2,"snorlax"],
+["Eevee & Snorlax GX","120/181","Team Up","teamup","120",2,"snorlax"],
+["Eevee & Snorlax GX","171/181","Team Up","teamup","171",2,"snorlax"],
+["Eevee & Snorlax GX","191/181","Team Up","teamup","191",2,"snorlax"],
+["Munchlax","173/236","Unified Minds","unifiedminds","173",2,"munchlax"],
+["Eevee & Snorlax GX","SM169","SM Promos","smpromos","169",2,"snorlax"],
+["Snorlax GX","SM05","SM Promos","smpromos","005",2,"snorlax"],
+["Snorlax","77/124","Fates Collide","fatescollide","077",3,"snorlax"],
+["Snorlax","58/83","Generations","generations","058",3,"snorlax"],
+["Snorlax","118/162","BREAKThrough","breakthrough","118",3,"snorlax"],
+["Snorlax","80/106","Flashfire","flashfire","080",3,"snorlax"],
+["Snorlax","26/39","Kalos Starter Set","kalosstarterset","026",3,"snorlax"],
+["Snorlax","XY179","XY Promos","xypromos","179",3,"snorlax"],
+["Snorlax","101/135","Plasma Storm","plasmastorm","101",4,"snorlax"],
+["Snorlax","109/149","Boundaries Crossed","boundariescrossed","109",4,"snorlax"],
+["Snorlax","33/95","Call of Legends","calloflegends","033",5,"snorlax"],
+["Snorlax","33/111","Rising Rivals","risingrivals","033",5,"snorlax"],
+["Snorlax","81/111","Rising Rivals","risingrivals","081",5,"snorlax"],
+["Snorlax Lv.X","111/111","Rising Rivals","risingrivals","111",5,"snorlax"],
+["Munchlax","69/111","Rising Rivals","risingrivals","069",5,"munchlax"],
+["Munchlax","70/111","Rising Rivals","risingrivals","070",5,"munchlax"],
+["Munchlax","68/100","Majestic Dawn","majesticdawn","068",5,"munchlax"],
+["Snorlax","37/130","Diamond & Pearl","diamondandpearl","037",5,"snorlax"],
+["Munchlax","33/130","Diamond & Pearl","diamondandpearl","033",5,"munchlax"],
+["Snorlax (Delta)","10/101","EX Dragon Frontiers","exdragonfrontiers","010",6,"snorlax"],
+["Rocket's Snorlax ex","104/109","EX Team Rocket Returns","exteamrocketreturns","104",6,"snorlax"],
+["Snorlax","15/112","EX FireRed & LeafGreen","exfireredandleafgreen","015",6,"snorlax"],
+["Snorlax","100/144","Skyridge","skyridge","100",7,"snorlax"],
+["Snorlax","64/110","Legendary Collection","legendary","064",7,"snorlax"],
+["Rocket's Snorlax","33/132","Gym Heroes","gymheroes","033",7,"snorlax"],
+["Snorlax","30/130","Base Set 2","baseset2","030",7,"snorlax"],
+["Snorlax","11/64","Jungle","jungle","011",7,"snorlax"],
+["Snorlax","27/64","Jungle","jungle","027",7,"snorlax"],
+["Snorlax","261/XY-P","XY Promo","xypromo","261",8,"snorlax"],
+["Snorlax Lv.X","127/DP-P","DP-P Promos","dp-ppromos","127",8,"snorlax"],
+["Snorlax","126/DP-P","DP-P Promos","dp-ppromos","126",8,"snorlax"],
+["Snorlax","49","Wizards Promos","wizardspromos","049",8,"snorlax"],
+["Snorlax","34","Vending Machine Set 1","vendingmachineset1","034",8,"snorlax"],
+["Hungry Snorlax","---","Miscellaneous Promos 1998","miscellaneouspromos1998","034",8,"snorlax"],
+["Munchlax","125/DP-P","DP-P Promos","dp-ppromos","125",8,"munchlax"],
+["Rota's Munchlax","88/PCG-P","PCG Promos","pcgpromos","088",8,"munchlax"],
+["PokePark's Munchlax","40/PCG-P","PCG Promos","pcgpromos","040",8,"munchlax"],
+["LaRousse's Munchlax","20/PCG-P","PCG Promos","pcgpromos","020",8,"munchlax"],
+["May's Munchlax","8/20","8th Movie Halfdeck","8thmoviehalfdeck","008",8,"munchlax"],
+["PokePark's Munchlax","8/9","PokePark Forest","pokeparkforest","008",8,"munchlax"],
+["LaRousse's Munchlax","6/19","7th Movie Halfdeck","7thmoviehalfdeck","006",8,"munchlax"]
+];
+
+(function() {
+  var collected = {};
+  var TOTAL = CARDS.length;
+  var openPopup = null;
+  var currentFilter = "all";
+  var currentEra = "all";
+  var currentPokemon = "all";
+
+  var NORMAL_ONLY_SETS = {
+    "SM Promos":1,"XY Promos":1,"SWSH Promos":1,"SV Promos":1,
+    "Wizards Promos":1,"Kalos Starter Set":1,
+    "Jungle":1,"Base Set 2":1,"Gym Heroes":1
+  };
+
+  var HOLO_RARES = {
+    "EX FireRed & LeafGreen|15/112":1,
+    "EX Dragon Frontiers|10/101":1,
+    "Unbroken Bonds|158/214":1,
+    "Hidden Fates|50/68":1,
+    "Vivid Voltage|131/180":1,
+    "Pokemon GO|55/78":1,
+    "Lost Origin|143/196":1,
+    "Journey Together|117/159":1
+  };
+
+  function getVariants(card) {
+    var setName = card[2];
+    var num = card[1];
+    var era = card[5];
+    if (era === 8) return 0;
+    if (NORMAL_ONLY_SETS[setName]) return 0;
+    if (num.indexOf("/") !== -1) {
+      var parts = num.split("/");
+      var left = parts[0];
+      if (/^[A-Za-z]/.test(left)) return 0;
+      var cardNum = parseInt(left, 10);
+      var setTotal = parseInt(parts[1], 10);
+      if (!isNaN(cardNum) && !isNaN(setTotal) && cardNum > setTotal) return 0;
+    }
+    var name = card[0];
+    if (/ V-UNION$/.test(name) || / V$/.test(name) || / GX$/.test(name) ||
+        / VMAX$/.test(name) || / VSTAR$/.test(name) || / ex$/.test(name) ||
+        / Lv\.X$/.test(name)) return 0;
+    if (HOLO_RARES[cardId(card)]) return 3;
+    return 1;
+  }
+
+  function variantBitsForCard(card) {
+    var v = getVariants(card);
+    if (v === 0) return [1];
+    if (v === 3) return [2, 4];
+    return [1, 4];
+  }
+
+  function variantNamesForCard(card) {
+    var v = getVariants(card);
+    if (v === 0) return ["Normal"];
+    if (v === 3) return ["Holo", "Reverse Holo"];
+    return ["Normal", "Reverse Holo"];
+  }
+
+  function isCollected(cid) {
+    return collected[cid] && collected[cid] > 0;
+  }
+
+  function isFullyCollected(cid, card) {
+    var val = collected[cid] || 0;
+    var bits = variantBitsForCard(card);
+    var allBits = 0;
+    for (var i = 0; i < bits.length; i++) allBits |= bits[i];
+    return (val & allBits) === allBits;
+  }
+
+  function isPartiallyCollected(cid, card) {
+    var val = collected[cid] || 0;
+    if (val === 0) return false;
+    return !isFullyCollected(cid, card);
+  }
+
+  function loadState() {
+    try {
+      var d = localStorage.getItem("snorlax-tcg");
+      if (d) collected = JSON.parse(d);
+    } catch(e) { collected = {}; }
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem("snorlax-tcg", JSON.stringify(collected));
+    } catch(e) {}
+  }
+
+  function cardId(c) {
+    return c[2] + "|" + c[1];
+  }
+
+  function getLocalId(num) {
+    if (num.indexOf("/") !== -1) {
+      var left = num.split("/")[0];
+      if (/^[A-Za-z]/.test(left)) return left;
+      return String(parseInt(left, 10));
+    }
+    if (/^[A-Za-z]/.test(num)) return num;
+    var p = parseInt(num, 10);
+    return isNaN(p) ? num : String(p);
+  }
+
+  function ptcgUrl(c) {
+    var sid = SET_IDS[c[2]];
+    if (!sid) return null;
+    return "https://images.pokemontcg.io/" + sid + "/" + getLocalId(c[1]) + "_hires.png";
+  }
+
+  function serebiiImg(c) {
+    var num = c[4].replace(/^[a-zA-Z]+/, '').replace(/^0+(?=\d)/, '');
+    return "https://www.serebii.net/card/" + c[3] + "/" + num + ".jpg";
+  }
+
+  function serebiiPage(c) {
+    return "https://www.serebii.net/card/" + c[3] + "/" + c[4] + ".shtml";
+  }
+
+  function updateTotalProgress() {
+    var count = 0;
+    for (var i = 0; i < CARDS.length; i++) {
+      var cid = cardId(CARDS[i]);
+      if (isCollected(cid)) count++;
+    }
+    var pct = TOTAL > 0 ? Math.round(count / TOTAL * 100) : 0;
+    document.getElementById("progress-count").textContent =
+      count + " / " + TOTAL + " collected (" + pct + "%)";
+    document.getElementById("progress-fill").style.width = pct + "%";
+  }
+
+  function updateSetProgress(section) {
+    var all = section.querySelectorAll(".card");
+    var done = section.querySelectorAll(".card.collected, .card.partial");
+    var el = section.querySelector(".set-progress");
+    if (el) {
+      el.textContent = done.length + "/" + all.length;
+      if (done.length === all.length && all.length > 0) {
+        section.classList.add("set-complete");
+      } else {
+        section.classList.remove("set-complete");
+      }
+    }
+  }
+
+  function setupImage(img, card, container) {
+    var primary = ptcgUrl(card);
+    var fallback = serebiiImg(card);
+    function showPlaceholder() {
+      img.style.display = "none";
+      var ph = document.createElement("div");
+      ph.className = "card-placeholder";
+      var n = document.createElement("span");
+      n.className = "placeholder-name";
+      n.textContent = card[0];
+      var num = document.createElement("span");
+      num.className = "placeholder-num";
+      num.textContent = card[1];
+      ph.appendChild(n);
+      ph.appendChild(num);
+      container.appendChild(ph);
+    }
+    function tryFallback() {
+      img.removeEventListener("error", tryFallback);
+      img.src = fallback;
+      img.addEventListener("error", function onFail() {
+        img.removeEventListener("error", onFail);
+        showPlaceholder();
+      });
+    }
+    if (primary) {
+      img.addEventListener("error", tryFallback);
+      img.src = primary;
+    } else {
+      img.addEventListener("error", function onFail() {
+        img.removeEventListener("error", onFail);
+        showPlaceholder();
+      });
+      img.src = fallback;
+    }
+  }
+
+  function closePopup() {
+    if (openPopup) {
+      if (openPopup.parentNode) openPopup.parentNode.removeChild(openPopup);
+      openPopup = null;
+    }
+  }
+
+  function updateCardState(div, card) {
+    var cid = cardId(card);
+    var full = isFullyCollected(cid, card);
+    var partial = isPartiallyCollected(cid, card);
+    div.classList.toggle("collected", full);
+    div.classList.toggle("partial", partial);
+    var cm = div.querySelector(".checkmark");
+    if (cm) {
+      if (full) cm.textContent = "✓";
+      else if (partial) cm.textContent = "½";
+      else cm.textContent = "";
+    }
+    var dots = div.querySelectorAll(".variant-dot");
+    if (dots.length > 0) {
+      var bits = variantBitsForCard(card);
+      var val = collected[cid] || 0;
+      for (var i = 0; i < dots.length; i++) {
+        dots[i].classList.toggle("owned", !!(val & bits[i]));
+      }
+    }
+  }
+
+  function createVariantPopup(card, div) {
+    var cid = cardId(card);
+    var names = variantNamesForCard(card);
+    var bits = variantBitsForCard(card);
+    var popup = document.createElement("div");
+    popup.className = "variant-popup";
+    var title = document.createElement("div");
+    title.className = "variant-popup-title";
+    title.textContent = "Variants";
+    popup.appendChild(title);
+    for (var i = 0; i < names.length; i++) {
+      (function(idx) {
+        var row = document.createElement("div");
+        row.className = "variant-row";
+        var cb = document.createElement("div");
+        cb.className = "variant-cb";
+        var val = collected[cid] || 0;
+        if (val & bits[idx]) cb.classList.add("checked");
+        var mark = document.createElement("span");
+        mark.className = "variant-cb-mark";
+        mark.textContent = (val & bits[idx]) ? "✓" : "";
+        cb.appendChild(mark);
+        row.appendChild(cb);
+        var label = document.createElement("span");
+        label.className = "variant-label";
+        label.textContent = names[idx];
+        row.appendChild(label);
+        row.addEventListener("click", function(e) {
+          e.stopPropagation();
+          e.preventDefault();
+          var current = collected[cid] || 0;
+          if (current & bits[idx]) {
+            current &= ~bits[idx];
+          } else {
+            current |= bits[idx];
+          }
+          if (current === 0) {
+            delete collected[cid];
+          } else {
+            collected[cid] = current;
+          }
+          saveState();
+          var isOn = !!(current & bits[idx]);
+          cb.classList.toggle("checked", isOn);
+          mark.textContent = isOn ? "✓" : "";
+          updateCardState(div, card);
+          updateTotalProgress();
+          var sec = div.closest(".set-section");
+          if (sec) updateSetProgress(sec);
+          if (currentFilter !== "all") applyFilters();
+        });
+        popup.appendChild(row);
+      })(i);
+    }
+    return popup;
+  }
+
+  function createCard(card) {
+    var cid = cardId(card);
+    var variants = getVariants(card);
+    var full = isFullyCollected(cid, card);
+    var partial = isPartiallyCollected(cid, card);
+    var div = document.createElement("div");
+    var cls = "card";
+    if (full) cls += " collected";
+    else if (partial) cls += " partial";
+    div.className = cls;
+    div.setAttribute("data-name", card[0].toLowerCase());
+    div.setAttribute("data-set", card[2].toLowerCase());
+    div.setAttribute("data-pokemon", card[6]);
+
+    var link = document.createElement("a");
+    link.className = "card-link";
+    link.href = serebiiPage(card);
+    link.target = "_blank";
+    link.rel = "noopener";
+    var img = document.createElement("img");
+    img.className = "card-img";
+    img.alt = card[0] + " - " + card[2];
+    img.loading = "lazy";
+    img.decoding = "async";
+    setupImage(img, card, link);
+    link.appendChild(img);
+    var overlay = document.createElement("div");
+    overlay.className = "collected-overlay";
+    overlay.textContent = "COLLECTED";
+    link.appendChild(overlay);
+    div.appendChild(link);
+
+    var cb = document.createElement("div");
+    cb.className = "card-checkbox";
+    var cm = document.createElement("span");
+    cm.className = "checkmark";
+    if (full) cm.textContent = "✓";
+    else if (partial) cm.textContent = "½";
+    else cm.textContent = "";
+    cb.appendChild(cm);
+
+    if (variants === 0) {
+      cb.addEventListener("click", function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        closePopup();
+        if (collected[cid]) {
+          delete collected[cid];
+        } else {
+          collected[cid] = 1;
+        }
+        saveState();
+        updateCardState(div, card);
+        updateTotalProgress();
+        var sec = div.closest(".set-section");
+        if (sec) updateSetProgress(sec);
+        if (currentFilter !== "all") applyFilters();
+      });
+    } else {
+      cb.addEventListener("click", function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        if (openPopup && openPopup.parentNode === div) {
+          closePopup();
+          return;
+        }
+        closePopup();
+        var popup = createVariantPopup(card, div);
+        div.appendChild(popup);
+        openPopup = popup;
+      });
+    }
+    div.appendChild(cb);
+
+    var info = document.createElement("div");
+    info.className = "card-info";
+    var nm = document.createElement("span");
+    nm.className = "card-name";
+    nm.textContent = card[0];
+    nm.title = card[0];
+    info.appendChild(nm);
+    if (variants > 0) {
+      var dotsDiv = document.createElement("span");
+      dotsDiv.className = "variant-dots";
+      var bits = variantBitsForCard(card);
+      var val = collected[cid] || 0;
+      for (var i = 0; i < bits.length; i++) {
+        var dot = document.createElement("span");
+        dot.className = "variant-dot";
+        if (val & bits[i]) dot.classList.add("owned");
+        dotsDiv.appendChild(dot);
+      }
+      info.appendChild(dotsDiv);
+    }
+    var numEl = document.createElement("span");
+    numEl.className = "card-num";
+    numEl.textContent = card[1];
+    info.appendChild(numEl);
+    div.appendChild(info);
+    return div;
+  }
+
+  function renderAll() {
+    var container = document.getElementById("container");
+    container.innerHTML = "";
+    var currentEraIdx = -1;
+    var currentSet = null;
+    var eraDiv = null;
+    var setDiv = null;
+    var grid = null;
+    for (var i = 0; i < CARDS.length; i++) {
+      var c = CARDS[i];
+      var era = c[5];
+      var setName = c[2];
+      if (era !== currentEraIdx) {
+        currentEraIdx = era;
+        currentSet = null;
+        eraDiv = document.createElement("div");
+        eraDiv.className = "era-section";
+        eraDiv.setAttribute("data-era", String(era));
+        var eh = document.createElement("h2");
+        eh.className = "era-header";
+        eh.textContent = ERA_NAMES[era];
+        eraDiv.appendChild(eh);
+        container.appendChild(eraDiv);
+      }
+      if (setName !== currentSet) {
+        currentSet = setName;
+        setDiv = document.createElement("div");
+        setDiv.className = "set-section";
+        var sh = document.createElement("div");
+        sh.className = "set-header";
+        var sn = document.createElement("h3");
+        sn.textContent = setName;
+        sh.appendChild(sn);
+        var sp = document.createElement("span");
+        sp.className = "set-progress";
+        sp.textContent = "0/0";
+        sh.appendChild(sp);
+        setDiv.appendChild(sh);
+        grid = document.createElement("div");
+        grid.className = "card-grid";
+        setDiv.appendChild(grid);
+        eraDiv.appendChild(setDiv);
+      }
+      grid.appendChild(createCard(c));
+    }
+    var sets = container.querySelectorAll(".set-section");
+    for (var j = 0; j < sets.length; j++) {
+      updateSetProgress(sets[j]);
+    }
+  }
+
+  function applyFilters() {
+    var query = (document.getElementById("search").value || "").toLowerCase().trim();
+    var cards = document.querySelectorAll(".card");
+    for (var i = 0; i < cards.length; i++) {
+      var name = cards[i].getAttribute("data-name");
+      var set = cards[i].getAttribute("data-set");
+      var pokemon = cards[i].getAttribute("data-pokemon");
+      var textMatch = !query || name.indexOf(query) !== -1 || set.indexOf(query) !== -1;
+      var statusMatch = true;
+      if (currentFilter === "collected") {
+        statusMatch = cards[i].classList.contains("collected") || cards[i].classList.contains("partial");
+      } else if (currentFilter === "needed") {
+        statusMatch = !cards[i].classList.contains("collected") && !cards[i].classList.contains("partial");
+      }
+      var pokemonMatch = currentPokemon === "all" || pokemon === currentPokemon;
+      if (textMatch && statusMatch && pokemonMatch) {
+        cards[i].classList.remove("filt-hidden");
+      } else {
+        cards[i].classList.add("filt-hidden");
+      }
+    }
+    var sets = document.querySelectorAll(".set-section");
+    for (var j = 0; j < sets.length; j++) {
+      var hasVisible = sets[j].querySelector(".card:not(.filt-hidden)");
+      if (hasVisible) {
+        sets[j].classList.remove("filt-hidden");
+      } else {
+        sets[j].classList.add("filt-hidden");
+      }
+    }
+    var eras = document.querySelectorAll(".era-section");
+    for (var k = 0; k < eras.length; k++) {
+      var eraMatch = currentEra === "all" || eras[k].getAttribute("data-era") === currentEra;
+      if (!eraMatch) {
+        eras[k].classList.add("filt-hidden");
+      } else {
+        var hasVisSet = eras[k].querySelector(".set-section:not(.filt-hidden)");
+        if (hasVisSet) {
+          eras[k].classList.remove("filt-hidden");
+        } else {
+          eras[k].classList.add("filt-hidden");
+        }
+      }
+    }
+  }
+
+  function setActiveFilter(filter) {
+    currentFilter = filter;
+    try { localStorage.setItem("snorlax-tcg-filter", filter); } catch(e) {}
+    var btns = document.querySelectorAll(".filter-btn");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle("active", btns[i].getAttribute("data-filter") === filter);
+    }
+    applyFilters();
+  }
+
+  function setActivePokemon(pokemon) {
+    currentPokemon = pokemon;
+    try { localStorage.setItem("snorlax-tcg-pokemon", pokemon); } catch(e) {}
+    var btns = document.querySelectorAll(".pokemon-btn");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle("active", btns[i].getAttribute("data-pokemon") === pokemon);
+    }
+    applyFilters();
+  }
+
+  function init() {
+    loadState();
+    try {
+      var saved = localStorage.getItem("snorlax-tcg-filter");
+      if (saved === "collected" || saved === "needed") currentFilter = saved;
+      var savedEra = localStorage.getItem("snorlax-tcg-era");
+      if (savedEra !== null) currentEra = savedEra;
+      var savedPokemon = localStorage.getItem("snorlax-tcg-pokemon");
+      if (savedPokemon === "snorlax" || savedPokemon === "munchlax") currentPokemon = savedPokemon;
+    } catch(e) {}
+    renderAll();
+    updateTotalProgress();
+
+    var eraSelect = document.getElementById("era-filter");
+    var usedEras = {};
+    for (var i = 0; i < CARDS.length; i++) usedEras[CARDS[i][5]] = true;
+    for (var e = 0; e < ERA_NAMES.length; e++) {
+      if (!usedEras[e]) continue;
+      var opt = document.createElement("option");
+      opt.value = String(e);
+      opt.textContent = ERA_NAMES[e];
+      eraSelect.appendChild(opt);
+    }
+    eraSelect.value = currentEra;
+    eraSelect.addEventListener("change", function() {
+      currentEra = this.value;
+      try { localStorage.setItem("snorlax-tcg-era", currentEra); } catch(ex) {}
+      applyFilters();
+    });
+
+    var btns = document.querySelectorAll(".filter-btn");
+    for (var b = 0; b < btns.length; b++) {
+      btns[b].classList.toggle("active", btns[b].getAttribute("data-filter") === currentFilter);
+      btns[b].addEventListener("click", function() {
+        setActiveFilter(this.getAttribute("data-filter"));
+      });
+    }
+
+    var pokeBtns = document.querySelectorAll(".pokemon-btn");
+    for (var p = 0; p < pokeBtns.length; p++) {
+      pokeBtns[p].classList.toggle("active", pokeBtns[p].getAttribute("data-pokemon") === currentPokemon);
+      pokeBtns[p].addEventListener("click", function() {
+        setActivePokemon(this.getAttribute("data-pokemon"));
+      });
+    }
+
+    if (currentFilter !== "all" || currentEra !== "all" || currentPokemon !== "all") applyFilters();
+
+    var searchEl = document.getElementById("search");
+    var timer = null;
+    searchEl.addEventListener("input", function() {
+      clearTimeout(timer);
+      timer = setTimeout(function() { applyFilters(); }, 120);
+    });
+
+    document.addEventListener("click", function(e) {
+      if (openPopup && !openPopup.contains(e.target)) {
+        var cb = e.target.closest(".card-checkbox");
+        if (!cb) closePopup();
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
