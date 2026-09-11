@@ -554,8 +554,13 @@ var CARDS=[
   var NORMAL_ONLY_SETS = {
     "SM Promos":1,"XY Promos":1,"SWSH Promos":1,"SV Promos":1,
     "Wizards Promos":1,"Kalos Starter Set":1,
-    "Jungle":1,"Base Set 2":1,"Gym Heroes":1,
-    "TCG Classic":1
+    "Base Set 2":1,"TCG Classic":1
+  };
+
+  var FIRST_EDITION_CARDS = {
+    "Jungle|11/64":1,
+    "Jungle|27/64":1,
+    "Gym Heroes|33/132":1
   };
 
   var HOLO_RARES = {
@@ -572,6 +577,7 @@ var CARDS=[
     var setName = card[2];
     var num = card[1];
     var era = card[5];
+    if (FIRST_EDITION_CARDS[cardId(card)]) return 4;
     if (era === 8) return 0;
     if (NORMAL_ONLY_SETS[setName]) return 0;
     if (num.indexOf("/") !== -1) {
@@ -593,6 +599,7 @@ var CARDS=[
   function variantBitsForCard(card) {
     var v = getVariants(card);
     if (v === 0) return [1];
+    if (v === 4) return [8, 16];
     if (v === 3) return [2, 4];
     return [1, 4];
   }
@@ -600,6 +607,7 @@ var CARDS=[
   function variantNamesForCard(card) {
     var v = getVariants(card);
     if (v === 0) return ["Normal"];
+    if (v === 4) return ["1st Edition", "Unlimited"];
     if (v === 3) return ["Holo", "Reverse Holo"];
     return ["Normal", "Reverse Holo"];
   }
@@ -627,6 +635,14 @@ var CARDS=[
       var d = localStorage.getItem("snorlax-cards-tcg");
       if (d) collected = JSON.parse(d);
     } catch(e) { collected = {}; }
+    var migrated = false;
+    for (var fk in FIRST_EDITION_CARDS) {
+      if (FIRST_EDITION_CARDS.hasOwnProperty(fk) && collected[fk] === 1) {
+        collected[fk] = 8;
+        migrated = true;
+      }
+    }
+    if (migrated) saveState();
   }
 
   function saveState() {
