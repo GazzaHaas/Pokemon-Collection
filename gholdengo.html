@@ -38,10 +38,12 @@ body::before {
   pointer-events: none;
 }
 header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  width: 100%;
   z-index: 100;
-  background: rgba(22, 22, 37, 0.95);
+  background: rgba(22, 22, 37, 0.97);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: none;
@@ -1141,6 +1143,7 @@ var CARDS=[
     init();
   }
 })();
+(function(){var h=document.querySelector('header'),m=document.querySelector('main');function fix(){m.style.paddingTop=h.offsetHeight+'px';}fix();window.addEventListener('resize',fix);})();
 </script>
 </body>
 </html>
