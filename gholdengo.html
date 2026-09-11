@@ -673,14 +673,22 @@ var CARDS=[
     }
     function tryFallback() {
       img.removeEventListener("error", tryFallback);
+      img.removeEventListener("load", checkCardBack);
       img.src = fallback;
       img.addEventListener("error", function onFail() {
         img.removeEventListener("error", onFail);
         showPlaceholder();
       });
     }
+    function checkCardBack() {
+      img.removeEventListener("load", checkCardBack);
+      if (img.naturalWidth === 640 && img.naturalHeight === 892) {
+        tryFallback();
+      }
+    }
     if (primary) {
       img.addEventListener("error", tryFallback);
+      img.addEventListener("load", checkCardBack);
       img.src = primary;
     } else {
       img.addEventListener("error", function onFail() {

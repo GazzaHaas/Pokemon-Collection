@@ -656,6 +656,7 @@ var CARDS=[
   }
 
   function getLocalId(num) {
+    if (/^SVP/.test(num)) return String(parseInt(num.replace(/^SVP/, ''), 10));
     if (num.indexOf("/") !== -1) {
       var left = num.split("/")[0];
       if (/^[A-Za-z]/.test(left)) return left;
@@ -669,7 +670,9 @@ var CARDS=[
   function ptcgUrl(c) {
     var sid = SET_IDS[c[2]];
     if (!sid) return null;
-    return "https://images.pokemontcg.io/" + sid + "/" + getLocalId(c[1]) + "_hires.png";
+    var localId = getLocalId(c[1]);
+    if (/^TG/.test(localId)) sid = sid + "tg";
+    return "https://images.pokemontcg.io/" + sid + "/" + localId + "_hires.png";
   }
 
   function serebiiImg(c) {
@@ -726,14 +729,22 @@ var CARDS=[
     }
     function tryFallback() {
       img.removeEventListener("error", tryFallback);
+      img.removeEventListener("load", checkCardBack);
       img.src = fallback;
       img.addEventListener("error", function onFail() {
         img.removeEventListener("error", onFail);
         showPlaceholder();
       });
     }
+    function checkCardBack() {
+      img.removeEventListener("load", checkCardBack);
+      if (img.naturalWidth === 640 && img.naturalHeight === 892) {
+        tryFallback();
+      }
+    }
     if (primary) {
       img.addEventListener("error", tryFallback);
+      img.addEventListener("load", checkCardBack);
       img.src = primary;
     } else {
       img.addEventListener("error", function onFail() {
