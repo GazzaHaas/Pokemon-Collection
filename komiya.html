@@ -184,7 +184,7 @@ header.compact .progress-row {
 }
 header.compact .compact-progress { opacity: 1; }
 header.compact .search-row { max-height: 0; opacity: 0; margin-top: 0; }
-header.compact .filter-row { max-height: 0; opacity: 0; margin-top: 0; }
+header.compact .filter-row { max-height: 0; opacity: 0; margin-top: 0; overflow: hidden; }
 main {
   max-width: 1200px;
   margin: 0 auto;
@@ -445,7 +445,6 @@ main {
   margin-top: 0.5rem;
   transition: opacity 0.25s, max-height 0.3s, margin 0.3s;
   max-height: 60px;
-  overflow: hidden;
 }
 .filter-bar {
   display: flex;
