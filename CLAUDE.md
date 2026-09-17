@@ -141,13 +141,15 @@ body { touch-action: pan-y; }
 
 ### Collection Page Header Design (komiya, kanda, gholdengo, snorlax-cards, munchlax)
 - Back link: dim color (`var(--text-dim)`), transitions to accent on hover
-- Title: `font-size: 1.35rem`, card count text: `font-size: 0.75rem`
+- Title: `font-size: 1.35rem`
+- **No redundant card count** — Build 1 pages (komiya, kanda, gholdengo) removed "X cards" span since progress row already shows "0 / X collected"
 - Progress bar: `height: 4px`, `background: rgba(255,255,255,0.08)`, `border-radius: 2px`
 - Progress count: `font-size: 0.75rem`
-- Search: `border-radius: 20px` (pill shape), `background: rgba(255,255,255,0.05)`, `border: 1px solid rgba(255,255,255,0.08)`
+- **Search collapsed behind icon** (Build 1 only): SVG magnifier button (`.search-toggle`) in `.header-top` row, `margin-left: auto`. Toggles `.search-row.open` to reveal/hide the search input. Closing clears the search value and dispatches `input` event.
 - Filter buttons: pill-shaped (`border-radius: 20px`), `padding: 0.3rem 0.7rem`, `font-size: 0.75rem`, transparent background
 - Era dropdown: pill-shaped, `margin-left: auto` (pushed to right end of filter row)
 - All filters in one `.filter-row` flex container (buttons + era dropdown inline)
+- **Shrink-on-scroll** (Build 1 only): Scroll listener toggles `header.compact` class. Compact mode hides `.progress-row`, `.search-row`, `.filter-row` (and `.pokemon-bar` on gholdengo) via `max-height: 0; opacity: 0`. Shows `.compact-progress` (2px thin bar) under the title. Expands back when scrolling up or reaching top. Threshold: 50px. JS recalculates `main.style.paddingTop` after transitions (350ms delay).
 
 ### No Footers
 All footers have been removed across every page.
